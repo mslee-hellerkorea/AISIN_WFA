@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
+  <asmv1:assemblyIdentity name="AISIN_WFA.exe" version="1.0.0.0" publicKeyToken="4328236df2769591" language="neutral" processorArchitecture="x86" type="win32" />
+  <application />
+  <entryPoint>
+    <assemblyIdentity name="AISIN_WFA" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
+    <commandLine file="AISIN_WFA.exe" parameters="" />
+  </entryPoint>
+  <trustInfo>
+    <security>
+      <applicationRequestMinimum>
+        <PermissionSet version="1" class="System.Security.NamedPermissionSet" Name="LocalIntranet" Description="Default rights given to applications on the local intranet" Unrestricted="true" ID="Custom" SameSite="site" />
+        <defaultAssemblyRequest permissionSetReference="Custom" />
+      </applicationRequestMinimum>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!-- UAC Manifest Options
+            If you want to change the Windows User Account Control level replace the 
+            requestedExecutionLevel node with one of the following.
+
+        <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
+        <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
+        <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
+
+            Specifying requestedExecutionLevel node will disable file and registry virtualization.
+            If you want to utilize File and Registry Virtualization for backward 
+            compatibility then delete the requestedExecutionLevel node.
+        -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <dependency>
+    <dependentOS>
+      <osVersionInfo>
+        <os majorVersion="5" minorVersion="1" buildNumber="2600" servicePackMajor="0" />
+      </osVersionInfo>
+    </dependentOS>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="Microsoft.Windows.CommonLanguageRuntime" version="4.0.30319.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CIPCompolet" version="1.3.1.1" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CIPCoreDotNet" version="1.3.0.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CIPMessaging" version="1.3.0.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CIPObjectLibrary" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CommonCipService" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CompoletDataManager" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="CompoletFramework" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="FgwDotnet" version="1.0.0.3" publicKeyToken="E010E60D6DEEB244" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="PLCDevice" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="SysmacCipService" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AISIN_WFA.exe" size="28160">
+      <assemblyIdentity name="AISIN_WFA" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>cF748i+/G6SaWdHhcFJDIhvkq40=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AxInterop.HELLERCOMMLib.dll" size="33280">
+      <assemblyIdentity name="AxInterop.HELLERCOMMLib" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>sUGvB5U2VU/KuQ3mFLYUD+pNIcw=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\CIPCompolet.resources.dll" size="8192">
+      <assemblyIdentity name="CIPCompolet.resources" version="1.3.1.1" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>bS5LZeMHxzLVqLC9mbcdL76VOnA=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\CIPObjectLibrary.resources.dll" size="4608">
+      <assemblyIdentity name="CIPObjectLibrary.resources" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>V4IPEET4y0uhURUFzXMXCc033IA=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\CommonCipService.resources.dll" size="6656">
+      <assemblyIdentity name="CommonCipService.resources" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>9N9eCbH0hufYdQflFVpEY8bncFc=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\CompoletDataManager.resources.dll" size="8192">
+      <assemblyIdentity name="CompoletDataManager.resources" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>AGFs9UIBdsry8Gf4lwDqyFM0+ag=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\CompoletFramework.resources.dll" size="5120">
+      <assemblyIdentity name="CompoletFramework.resources" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>2q9b6NkDvYCopKvr0M7gyEt4V2g=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\FgwDotnet.resources.dll" size="5632">
+      <assemblyIdentity name="FgwDotnet.resources" version="1.0.0.3" publicKeyToken="E010E60D6DEEB244" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>SGBWPiqn7+zJ94XlOuds1OAXRdM=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.HELLERCOMMLib.dll" size="34816">
+      <assemblyIdentity name="Interop.HELLERCOMMLib" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>FnXuA2+aDUNhcIhG+5XCYBwAFrE=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ja\SysmacCipService.resources.dll" size="7168">
+      <assemblyIdentity name="SysmacCipService.resources" version="1.3.1.0" publicKeyToken="F3505D5782C23C5D" language="ja" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>gyIp5XwWBRnIiMkpjhZGz/Mvxrg=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- A list of all Windows versions that this application is designed to work with. Windows will automatically select the most compatible environment.-->
+      <!-- If your application is designed to work with Windows 7, uncomment the following supportedOS node-->
+      <!--<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>-->
+    </application>
+  </compatibility>
+<publisherIdentity name="CN=LAGLEIZE\FrankN" issuerKeyHash="2fc4df1da3f7599c75e647e1bbccc30d03fea06f" /><Signature Id="StrongNameSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>p/0fQm+zUKUgKUW747LtwTnQWBo=</DigestValue></Reference></SignedInfo><SignatureValue>QIb9DfputGZvwO5uasIaGZPqddcAMBbRmjfnnFXBPt8ireA9lt5swz0Y+RrSidR+8Rcdc2WWzJxW/4ufieeW1Jx8oCY1/ZvVfFr473wMqK7xpCtsa1OuXGq7vfIYfJt//P2f44ymV4M1+oXyPA995Kei/fnmm6g3YhgIlFqThDc=</SignatureValue><KeyInfo Id="StrongNameKeyInfo"><KeyValue><RSAKeyValue><Modulus>t31oYqBW+STo0pYeievMfuOHjWeY9Dih7LtgYuZTgFesft+s8cjQV7SYz7muTH2N/Jw2Qn3ICRKrUROoI/CM7BvxhhAzfBPgsT5kHXgyGG+7VM8dPeJcf/AXAUoSIEJL91AdirbRmP6H43qySrRyqjMo8SsoOxZPUqpIyV2531c=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><msrel:RelData xmlns:msrel="http://schemas.microsoft.com/windows/rel/2005/reldata"><r:license xmlns:r="urn:mpeg:mpeg21:2003:01-REL-R-NS" xmlns:as="http://schemas.microsoft.com/windows/pki/2005/Authenticode"><r:grant><as:ManifestInformation Hash="1a58d039c1edb2e3bb452920a550b36f421ffda7" Description="" Url=""><as:assemblyIdentity name="AISIN_WFA.exe" version="1.0.0.0" publicKeyToken="4328236df2769591" language="neutral" processorArchitecture="x86" type="win32" /></as:ManifestInformation><as:SignedBy /><as:AuthenticodePublisher><as:X509SubjectName>CN=LAGLEIZE\FrankN</as:X509SubjectName></as:AuthenticodePublisher></r:grant><r:issuer><Signature Id="AuthenticodeSignature" xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>iunqTGYFgj3KcD/rq5eSgFWLTno=</DigestValue></Reference></SignedInfo><SignatureValue>n+ibePESPUY5+XK0lpNfye5qcTUeOZ50v8fGiwJMwdYyRwsh4+u+cT/Ll4zciNRLOg1KnlVlCBIT+d8WjBKA62FjjbX2FNkNAUr28Fd/WsllcR+MNvvZpEK6EziS+5qRqwRTDbGV16AAdZRvOPSrWIDSTIpjOIOP3FEni5dXHHg=</SignatureValue><KeyInfo><KeyValue><RSAKeyValue><Modulus>t31oYqBW+STo0pYeievMfuOHjWeY9Dih7LtgYuZTgFesft+s8cjQV7SYz7muTH2N/Jw2Qn3ICRKrUROoI/CM7BvxhhAzfBPgsT5kHXgyGG+7VM8dPeJcf/AXAUoSIEJL91AdirbRmP6H43qySrRyqjMo8SsoOxZPUqpIyV2531c=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><X509Data><X509Certificate>MIIB1TCCAT6gAwIBAgIQOqXkA9CdJ5NPlR2kD+3srTANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDHh4ATABBAEcATABFAEkAWgBFAFwARgByAGEAbgBrAE4wHhcNMTQwODI1MTkyNDA4WhcNMTUwODI2MDEyNDA4WjApMScwJQYDVQQDHh4ATABBAEcATABFAEkAWgBFAFwARgByAGEAbgBrAE4wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALd9aGKgVvkk6NKWHonrzH7jh41nmPQ4oey7YGLmU4BXrH7frPHI0Fe0mM+5rkx9jfycNkJ9yAkSq1ETqCPwjOwb8YYQM3wT4LE+ZB14Mhhvu1TPHT3iXH/wFwFKEiBCS/dQHYq20Zj+h+N6skq0cqozKPErKDsWT1KqSMldud9XAgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAtWsKvFmj50h0NC+WH+cKs9xb8q4LbWXhCIrYBPFvue1ulRoDPk+f4rpJ1GIaGxPp23oW1Sqr6ZzIMS9fW0TfUpBl9PN+XUQz8XVIRdX+eIz996cqonYLdhdrOAepYzaE6tdO9BAxBBf3DKS/WI3NFL+an+4Yf8Lp9d3L8kTGXY8=</X509Certificate></X509Data></KeyInfo></Signature></r:issuer></r:license></msrel:RelData></KeyInfo></Signature></asmv1:assembly>
