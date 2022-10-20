@@ -658,7 +658,7 @@ namespace AISIN_WFA
             // 
             // btnStartComm
             // 
-            this.btnStartComm.Location = new System.Drawing.Point(273, 477);
+            this.btnStartComm.Location = new System.Drawing.Point(273, 482);
             this.btnStartComm.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.btnStartComm.Name = "btnStartComm";
             this.btnStartComm.Size = new System.Drawing.Size(116, 25);
@@ -734,7 +734,7 @@ namespace AISIN_WFA
             // btnSelectBarcode
             // 
             this.btnSelectBarcode.Enabled = false;
-            this.btnSelectBarcode.Location = new System.Drawing.Point(172, 477);
+            this.btnSelectBarcode.Location = new System.Drawing.Point(172, 482);
             this.btnSelectBarcode.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.btnSelectBarcode.Name = "btnSelectBarcode";
             this.btnSelectBarcode.Size = new System.Drawing.Size(90, 25);
@@ -819,7 +819,6 @@ namespace AISIN_WFA
             this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.Name = "Form1";
             this.Text = "AISIN Line Communication PLC Interface (v1.19)";
-            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.axHellerComm1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

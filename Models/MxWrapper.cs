@@ -584,6 +584,29 @@ namespace AISIN_WFA.Models
             return false;
         }
 
+        public int WriteDeviceBlockInt(string szDevice, int iSize, ref int iData)
+        {
+            if (!bConnected) return -1;
+
+            int iRst = -1;
+
+            lock (thisLock)
+            {
+                try
+                {
+                    iRst = actUtlType.WriteDeviceBlock(szDevice, iSize, ref iData);
+                }
+                catch (Exception ex)
+                {
+                    HLog.log("ERROR", String.Format("WriteDeviceBlock -- Message: {0}", ex.Message));
+                }
+            }
+            if (iRst == 0) return 0;
+
+            SetError(iRst);
+            return iRst;
+        }
+
         public bool WriteDeviceBlock2(string szDevice, int iSize, ref short iData)
         {
             if (!bConnected) return false;

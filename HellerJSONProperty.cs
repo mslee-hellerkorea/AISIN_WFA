@@ -115,7 +115,21 @@ namespace AISIN_WFA
         public static string UpstreamPLCTag { get; set; } = "RE1inAMCV1";
         public static bool RailLogging { get; set; } = false;
         public static ePLCType PLCType { get; set; } = ePLCType.None;
-        public static int PlcStation { get; set; } = 6;
+        public static int UpstreamMxPlcStation { get; set; } = 6;
+        public static int DownstreamMxPlcStation { get; set; } = 6;
+
+        public static string AddrMxBarcodeLane1 { get; set; } = "D0";
+        public static string AddrMxBarcodeLane2 { get; set; } = "D100";
+
+        public static string AddrMxBoardAvailableLane1 { get; set; } = "D21";
+        public static string AddrMxBoardAvailableLane2 { get; set; } = "D121";
+
+        public static string AddrMxRailWidthLane1 { get; set; } = "D270";
+        public static string AddrMxRailWidthLane2 { get; set; } = "D370";
+
+        public static bool UpstreamEnableLane1 { get; set; } = true;
+        public static bool UpstreamEnableLane2 { get; set; } = true;
+
         public static eRails Lane1Rail { get; set; } = eRails.Rail1;
         public static eRails Lane2Rail { get; set; } = eRails.Rail2;
 
@@ -132,6 +146,18 @@ namespace AISIN_WFA
             Rail3,
             Rail4,
             Disable
+        }
+
+        public enum eLane
+        {
+            Lane1,
+            Lane2
+        }
+
+        public enum eEndian
+        {
+            BigEndian,
+            LittleEndian
         }
 
         public enum NavigatorLocation
