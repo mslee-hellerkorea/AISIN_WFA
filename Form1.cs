@@ -87,7 +87,7 @@ namespace AISIN_WFA
         private int[] MxPlcBarcodeDataLane2;
 
         private int MxPlcBaSignalLane1 = 0;
-        private int MxPlcBaSignalLane2 = 1;
+        private int MxPlcBaSignalLane2 = 0;
 
         private bool BASignal;
         private bool BASignalLane1;
@@ -336,6 +336,7 @@ namespace AISIN_WFA
                         break;
                     case "Mitsubishi":
                         globalParameter.PLCType = globalParameter.ePLCType.Mitsubishi;
+                        btnStartComm.Visible = false;
                         break;
                     default:
                         globalParameter.PLCType = globalParameter.ePLCType.None;
@@ -359,7 +360,7 @@ namespace AISIN_WFA
                 string lane1enable = globalParameter.UpstreamEnableLane1.ToString();
                 string lane2enable = globalParameter.UpstreamEnableLane2.ToString();
                 lane1enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane1", lane1enable);
-                lane1enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane2", lane2enable);
+                lane2enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane2", lane2enable);
                 globalParameter.UpstreamEnableLane1 = lane1enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
                 globalParameter.UpstreamEnableLane2 = lane2enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
 
@@ -620,7 +621,7 @@ namespace AISIN_WFA
                                 try
                                 {
                                     // Always update current read barcode value
-                                    UpdateBarcodeString();
+                                    UpdateBarcodeMxString();
 
                                     foreach (globalParameter.eLane lane in Enum.GetValues(typeof(globalParameter.eLane)))
                                     {
@@ -878,7 +879,7 @@ namespace AISIN_WFA
                 {
                     case globalParameter.eLane.Lane1:
                         {
-                            if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) return;
+                            if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
 
                             // test BA signal transition from OFF to ON
                             if (BASignalLane1 == false && (MxPlcBaSignalLane1 != 0))    // daniel modified,  remove barcode socket check.
@@ -934,7 +935,7 @@ namespace AISIN_WFA
                         break;
                     case globalParameter.eLane.Lane2:
                         {
-                            if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) return;
+                            if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
 
                             // test BA signal transition from OFF to ON
                             if (BASignalLane2 == false && (MxPlcBaSignalLane2 != 0))    // daniel modified,  remove barcode socket check.
@@ -1095,6 +1096,7 @@ namespace AISIN_WFA
                     {
                         case globalParameter.eLane.Lane1:
                             {
+                                if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
                                 addr = globalParameter.AddrMxBarcodeLane1;
                                 int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out bcrData1[0]);
                                 if (iReturnCode != 0)
@@ -1106,6 +1108,7 @@ namespace AISIN_WFA
                             break;
                         case globalParameter.eLane.Lane2:
                             {
+                                if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
                                 addr = globalParameter.AddrMxBarcodeLane2;
                                 int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out bcrData2[0]);
                                 if (iReturnCode != 0)
@@ -1139,6 +1142,7 @@ namespace AISIN_WFA
                     {
                         case globalParameter.eLane.Lane1:
                             {
+                                if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
                                 addr = globalParameter.AddrMxBoardAvailableLane1;
                                 int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out baData);
 
@@ -1148,10 +1152,12 @@ namespace AISIN_WFA
                                 }
 
                                 MxPlcBaSignalLane1 = baData;
+                                UpdatingValues("tbBASignalLane1", MxPlcBaSignalLane1.ToString());
                             }
                             break;
                         case globalParameter.eLane.Lane2:
                             {
+                                if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
                                 addr = globalParameter.AddrMxBoardAvailableLane2;
                                 int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out baData);
 
@@ -1161,6 +1167,7 @@ namespace AISIN_WFA
                                 }
 
                                 MxPlcBaSignalLane2 = baData;
+                                UpdatingValues("tbBASignalLane2", MxPlcBaSignalLane2.ToString());
                             }
                             break;
                         default:
@@ -1217,7 +1224,7 @@ namespace AISIN_WFA
                                 LogWrite("Fill rail1 width: " + flane1);
                             }
 
-                            int returnCode = UpstreamMxPlc.WriteDeviceBlockInt(addrLane1, 1, ref ilane1);
+                            int returnCode = DownstreamMxPlc.WriteDeviceBlockInt(addrLane1, 1, ref ilane1);
 
                             if (returnCode != 0)
                             {
@@ -1253,7 +1260,7 @@ namespace AISIN_WFA
                                 LogWrite("Fill rail1 width: " + flane2);
                             }
 
-                            int returnCode = UpstreamMxPlc.WriteDeviceBlockInt(addrLane2, 1, ref ilane2);
+                            int returnCode = DownstreamMxPlc.WriteDeviceBlockInt(addrLane2, 1, ref ilane2);
 
                             if (returnCode != 0)
                             {
@@ -1541,6 +1548,56 @@ namespace AISIN_WFA
                 UpdatingValues("tbBarcodeLane2string", GetBarcodeString(lane2BarcodeByte));
                 UpdatingValues("tbBASignalLane1", plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1].ToString());
                 UpdatingValues("tbBASignalLane2", plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2].ToString());
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpdateBarcodeString - {ex.Message}");
+            }
+        }
+        private void UpdateBarcodeMxString()
+        {
+            try
+            {
+                // update barcode data
+                string barcodeTextLane1 = "";
+                string barcodeTextLane2 = "";
+
+                Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
+                Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
+
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                {
+                    byte barcodeDigit;
+                    // Little endian
+                    if ((ndx & 1) == 0)
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane1[ndx / 2] & 0xFF);
+                    else
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane1[ndx / 2] >> 8 & 0xFF);
+                    barcodeTextLane1 += barcodeDigit.ToString("X2") + " ";
+                    lane1BarcodeByte[ndx] = barcodeDigit;
+                }
+
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                {
+                    byte barcodeDigit;
+                    // Little endian
+                    if ((ndx & 1) == 0)
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane2[ndx / 2] & 0xFF);
+                    else
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane2[ndx / 2] >> 8 & 0xFF);
+                    //if (barcodeDigit == 0)
+                    //    break;
+                    barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
+                    lane2BarcodeByte[ndx] = barcodeDigit;
+                }
+
+                UpdatingValues("tbBarcodeLane1", barcodeTextLane1);
+                UpdatingValues("tbBarcodeLane2", barcodeTextLane2);
+                UpdatingValues("tbBarcodeLane1string", GetBarcodeString(lane1BarcodeByte));
+                UpdatingValues("tbBarcodeLane2string", GetBarcodeString(lane2BarcodeByte));
+                UpdatingValues("tbBASignalLane1", MxPlcBaSignalLane1.ToString());
+                UpdatingValues("tbBASignalLane2", MxPlcBaSignalLane2.ToString());
 
             }
             catch (Exception ex)
@@ -2417,16 +2474,33 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void btnStartComm_Click(object sender, EventArgs e)
         {
-            if (plcCommEnable)
+            switch (globalParameter.PLCType)
             {
-                plcCommEnable = false;
-                btnStartComm.Text = "Start Comm";
+                case globalParameter.ePLCType.None:
+                    break;
+                case globalParameter.ePLCType.OMRON:
+                    {
+                        if (plcCommEnable)
+                        {
+                            plcCommEnable = false;
+                            btnStartComm.Text = "Start Comm";
+                        }
+                        else
+                        {
+                            plcCommEnable = true;
+                            btnStartComm.Text = "Stop Comm";
+                        }
+                    }
+                    break;
+                case globalParameter.ePLCType.Mitsubishi:
+                    {
+
+                    }
+                    break;
+                default:
+                    break;
             }
-            else
-            {
-                plcCommEnable = true;
-                btnStartComm.Text = "Stop Comm";
-            }
+
         }
 
         //---------------------------------------------------------------------

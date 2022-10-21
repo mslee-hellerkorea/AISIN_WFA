@@ -122,69 +122,79 @@ namespace AISIN_WFA.GUI
         {
             try
             {
-                // Barcode function
-                UseConfigFile.SetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
-                UseConfigFile.SetBoolConfigurationSetting("AutoBarcodeRecipe", globalParameter.autoChangeRecipeWidthSpeed);
-
-                // PLC Type
-                UseConfigFile.SetStringConfigurationSetting("PLCType", cb_PlcType.SelectedItem.ToString());
-
-                // Mx Upstream Station
-                int upStation = 0;
-                bool bUpstation = Int32.TryParse(tb_UpstreamStation.Text, out upStation);
-                if (bUpstation)
+                DialogResult result = MessageBox.Show("Are you sure?", "Save", MessageBoxButtons.OKCancel);
+                if (result == DialogResult.OK)
                 {
-                    UseConfigFile.SetIntConfigurationSetting("UpstreamMxPlcStation", upStation);
+                    // Barcode function
+                    UseConfigFile.SetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
+                    UseConfigFile.SetBoolConfigurationSetting("AutoBarcodeRecipe", globalParameter.autoChangeRecipeWidthSpeed);
+
+                    // PLC Type
+                    UseConfigFile.SetStringConfigurationSetting("PLCType", cb_PlcType.SelectedItem.ToString());
+
+                    // Mx Upstream Station
+                    int upStation = 0;
+                    bool bUpstation = Int32.TryParse(tb_UpstreamStation.Text, out upStation);
+                    if (bUpstation)
+                    {
+                        UseConfigFile.SetIntConfigurationSetting("UpstreamMxPlcStation", upStation);
+                    }
+                    else
+                    {
+                        tb_UpstreamStation.Text = globalParameter.UpstreamMxPlcStation.ToString();
+                        MessageBox.Show("Incorrect Upstation station number, please retry enter station number.");
+                    }
+
+                    // Mx Downstream station
+                    int downStation = 0;
+                    bool bDownstation = Int32.TryParse(tb_DownStation.Text, out downStation);
+                    if (bDownstation)
+                    {
+                        UseConfigFile.SetIntConfigurationSetting("DownstreamMxPlcStation", downStation);
+                    }
+                    else
+                    {
+                        tb_DownStation.Text = globalParameter.DownstreamMxPlcStation.ToString();
+                        MessageBox.Show("Incorrect Downtream station number, please retry enter station number.");
+                    }
+
+                    // Mx Address
+                    globalParameter.AddrMxBarcodeLane1 = tb_Lane1BcrAddr.Text;
+                    globalParameter.AddrMxBarcodeLane2 = tb_Lane2BcrAddr.Text;
+                    globalParameter.AddrMxBoardAvailableLane1 = tb_Lane1BaAddr.Text;
+                    globalParameter.AddrMxBoardAvailableLane2 = tb_Lane2BaAddr.Text;
+                    globalParameter.AddrMxRailWidthLane1 = tb_Lane1RailWidthAddr.Text;
+                    globalParameter.AddrMxRailWidthLane2 = tb_Lane2RailWidthAddr.Text;
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane1", globalParameter.AddrMxBarcodeLane1);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane2", globalParameter.AddrMxBarcodeLane2);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane1", globalParameter.AddrMxBoardAvailableLane1);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
+
+                    // Lane Enable
+                    globalParameter.UpstreamEnableLane1 = cb_Lane1Enable.Text == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+                    globalParameter.UpstreamEnableLane2 = cb_Lane2Enable.Text == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+                    UseConfigFile.SetStringConfigurationSetting("UpstreamEnableLane1", globalParameter.UpstreamEnableLane1.ToString());
+                    UseConfigFile.SetStringConfigurationSetting("UpstreamEnableLane2", globalParameter.UpstreamEnableLane2.ToString());
+
+                    // Lane Rail Setup
+                    globalParameter.Lane1Rail = cb_Lane1Rail.SelectedItem.ToString();
+                    UseConfigFile.SetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
+
+                    globalParameter.Lane2Rail = cb_Lane2Rail.SelectedItem.ToString();
+                    UseConfigFile.SetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
+
+                    // Omron PLC Setup
+                    UseConfigFile.SetStringConfigurationSetting("UpstreamPLCTag", tbUpstreamPLCTag.Text);
+                    UseConfigFile.SetStringConfigurationSetting("DownstreamPLCTag", tbDownstreamPLCTag.Text);
+                    UseConfigFile.SetStringConfigurationSetting("TagIP", tbTagIP.Text);
+
+                    // General Setup
+                    UseConfigFile.SetStringConfigurationSetting("LogFilePath", tbLogFilesFolder.Text);
+                    UseConfigFile.SetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
+                    MessageBox.Show("Saved config file. Please restart this application to apply changes.");
                 }
-                else
-                {
-                    tb_UpstreamStation.Text = globalParameter.UpstreamMxPlcStation.ToString();
-                    MessageBox.Show("Incorrect Upstation station number, please retry enter station number.");
-                }
-
-                // Mx Downstream station
-                int downStation = 0;
-                bool bDownstation = Int32.TryParse(tb_UpstreamStation.Text, out downStation);
-                if (bDownstation)
-                {
-                    UseConfigFile.SetIntConfigurationSetting("DownstreamMxPlcStation", downStation);
-                }
-                else
-                {
-                    tb_UpstreamStation.Text = globalParameter.DownstreamMxPlcStation.ToString();
-                    MessageBox.Show("Incorrect Downtream station number, please retry enter station number.");
-                }
-
-                // Mx Address
-                globalParameter.AddrMxBarcodeLane1 = tb_Lane1BcrAddr.Text;
-                globalParameter.AddrMxBarcodeLane2 = tb_Lane2BcrAddr.Text;
-                globalParameter.AddrMxBoardAvailableLane1 = tb_Lane1BaAddr.Text;
-                globalParameter.AddrMxBoardAvailableLane2 = tb_Lane2BaAddr.Text;
-                globalParameter.AddrMxRailWidthLane1 = tb_Lane1RailWidthAddr.Text;
-                globalParameter.AddrMxRailWidthLane2 = tb_Lane2RailWidthAddr.Text;
-                UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane1", globalParameter.AddrMxBarcodeLane1);
-                UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane2", globalParameter.AddrMxBarcodeLane2);
-                UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane1", globalParameter.AddrMxBoardAvailableLane1);
-                UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
-                UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
-                UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
-
-                // Lane Rail Setup
-                globalParameter.Lane1Rail = cb_Lane1Rail.SelectedItem.ToString();
-                UseConfigFile.SetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
-
-                globalParameter.Lane2Rail = cb_Lane2Rail.SelectedItem.ToString();
-                UseConfigFile.SetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
-
-                // Omron PLC Setup
-                UseConfigFile.SetStringConfigurationSetting("UpstreamPLCTag", tbUpstreamPLCTag.Text);
-                UseConfigFile.SetStringConfigurationSetting("DownstreamPLCTag", tbDownstreamPLCTag.Text);
-                UseConfigFile.SetStringConfigurationSetting("TagIP", tbTagIP.Text);
-
-                // General Setup
-                UseConfigFile.SetStringConfigurationSetting("LogFilePath", tbLogFilesFolder.Text);
-                UseConfigFile.SetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
-                MessageBox.Show("Saved config file. Please restart this application to apply changes.");
             }
             catch (Exception ex)
             {
