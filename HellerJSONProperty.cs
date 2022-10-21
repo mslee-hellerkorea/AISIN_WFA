@@ -127,11 +127,11 @@ namespace AISIN_WFA
         public static string AddrMxRailWidthLane1 { get; set; } = "D270";
         public static string AddrMxRailWidthLane2 { get; set; } = "D370";
 
-        public static bool UpstreamEnableLane1 { get; set; } = true;
-        public static bool UpstreamEnableLane2 { get; set; } = true;
+        public static eUpstreamUse UpstreamEnableLane1 { get; set; } = globalParameter.eUpstreamUse.Enable;
+        public static eUpstreamUse UpstreamEnableLane2 { get; set; } = globalParameter.eUpstreamUse.Enable;
 
-        public static eRails Lane1Rail { get; set; } = eRails.Rail1;
-        public static eRails Lane2Rail { get; set; } = eRails.Rail2;
+        public static string Lane1Rail { get; set; } = "Rail1";
+        public static string Lane2Rail { get; set; } = "Rail2";
 
         public enum ePLCType
         {
@@ -139,6 +139,13 @@ namespace AISIN_WFA
             OMRON,
             Mitsubishi
         }
+
+        public enum eUpstreamUse
+        {
+            Enable,
+            Disable
+        }
+
         public enum eRails
         {
             Rail1,
@@ -147,6 +154,8 @@ namespace AISIN_WFA
             Rail4,
             Disable
         }
+
+        public static string[] strRails = new string[] { "Rail1", "Rail2", "Rail3", "Rail4", "-" };
 
         public enum eLane
         {

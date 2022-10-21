@@ -48,6 +48,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AISIN_WFA.Utility;
 using AISIN_WFA.Models;
+using AISIN_WFA.GUI;
 
 namespace AISIN_WFA
 {
@@ -396,17 +397,31 @@ namespace AISIN_WFA
                 // PLC Station number
                 globalParameter.UpstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("PLCStation", globalParameter.UpstreamMxPlcStation);
 
+                globalParameter.UpstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("UpstreamMxPlcStation", globalParameter.UpstreamMxPlcStation);
+                globalParameter.DownstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("DownstreamMxPlcStation", globalParameter.DownstreamMxPlcStation);
+
+                // Mx Address
+                globalParameter.AddrMxBarcodeLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxBarcodeLane1", globalParameter.AddrMxBarcodeLane1);
+                globalParameter.AddrMxBarcodeLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxBarcodeLane2", globalParameter.AddrMxBarcodeLane2);
+                globalParameter.AddrMxBoardAvailableLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxBoardAvailableLane1", globalParameter.AddrMxBoardAvailableLane1);
+                globalParameter.AddrMxBoardAvailableLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
+                globalParameter.AddrMxRailWidthLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
+                globalParameter.AddrMxRailWidthLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
+
+                string lane1enable = globalParameter.UpstreamEnableLane1.ToString();
+                string lane2enable = globalParameter.UpstreamEnableLane2.ToString();
+                lane1enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane1", lane1enable);
+                lane1enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane2", lane2enable);
+                globalParameter.UpstreamEnableLane1 = lane1enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+                globalParameter.UpstreamEnableLane2 = lane2enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+
                 // Lane1EHC
-                string ehc1rail = globalParameter.Lane1Rail.ToString();
-                ehc1rail = UseConfigFile.GetStringConfigurationSetting("Lane1EHC", ehc1rail);
-                globalParameter.Lane1Rail = convertStringToeRails(ehc1rail);
-                cb_EHC1.Text = globalParameter.Lane1Rail.ToString();
+                globalParameter.Lane1Rail = UseConfigFile.GetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
+                cb_EHC1.Text = globalParameter.Lane1Rail;
 
                 // Lane2EHC
-                string ehc2rail = globalParameter.Lane2Rail.ToString();
-                ehc2rail = UseConfigFile.GetStringConfigurationSetting("Lane2EHC", ehc2rail);
-                globalParameter.Lane2Rail = convertStringToeRails(ehc2rail);
-                cb_EHC2.Text = globalParameter.Lane2Rail.ToString();
+                globalParameter.Lane2Rail = UseConfigFile.GetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
+                cb_EHC2.Text = globalParameter.Lane2Rail;
 
             }
             catch (Exception ex)
@@ -958,7 +973,7 @@ namespace AISIN_WFA
                 {
                     case globalParameter.eLane.Lane1:
                         {
-                            if (!globalParameter.UpstreamEnableLane1) return;
+                            if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) return;
 
                             // test BA signal transition from OFF to ON
                             if (BASignalLane1 == false && (MxPlcBaSignalLane1 != 0))    // daniel modified,  remove barcode socket check.
@@ -1014,7 +1029,7 @@ namespace AISIN_WFA
                         break;
                     case globalParameter.eLane.Lane2:
                         {
-                            if (!globalParameter.UpstreamEnableLane2) return;
+                            if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) return;
 
                             // test BA signal transition from OFF to ON
                             if (BASignalLane2 == false && (MxPlcBaSignalLane2 != 0))    // daniel modified,  remove barcode socket check.
@@ -1273,19 +1288,19 @@ namespace AISIN_WFA
                         {
                             switch (globalParameter.Lane1Rail)
                             {
-                                case globalParameter.eRails.Rail1:
+                                case "Rail1":
                                     flane1 = ocx.Oven.RailWidthSP[0];
                                     break;
-                                case globalParameter.eRails.Rail2:
+                                case "Rail2":
                                     flane1 = ocx.Oven.RailWidthSP[1];
                                     break;
-                                case globalParameter.eRails.Rail3:
+                                case "Rail3":
                                     flane1 = ocx.Oven.RailWidthSP[2];
                                     break;
-                                case globalParameter.eRails.Rail4:
+                                case "Rail4":
                                     flane1 = ocx.Oven.RailWidthSP[3];
                                     break;
-                                case globalParameter.eRails.Disable:
+                                case "-":
                                     return; // No need to write value;
                                 default:
                                     break;
@@ -1309,19 +1324,19 @@ namespace AISIN_WFA
                         {
                             switch (globalParameter.Lane2Rail)
                             {
-                                case globalParameter.eRails.Rail1:
+                                case "Rail1":
                                     flane2 = ocx.Oven.RailWidthSP[0];
                                     break;
-                                case globalParameter.eRails.Rail2:
+                                case "Rail2":
                                     flane2 = ocx.Oven.RailWidthSP[1];
                                     break;
-                                case globalParameter.eRails.Rail3:
+                                case "Rail3":
                                     flane2 = ocx.Oven.RailWidthSP[2];
                                     break;
-                                case globalParameter.eRails.Rail4:
+                                case "Rail4":
                                     flane2 = ocx.Oven.RailWidthSP[3];
                                     break;
-                                case globalParameter.eRails.Disable:
+                                case "-":
                                     return; // No need to write value;
                                 default:
                                     break;
@@ -2596,31 +2611,11 @@ namespace AISIN_WFA
                     MessageBox.Show("Incorrect station number, please retry enter station number.");
                 }
 
-                UseConfigFile.SetStringConfigurationSetting("Lane1Rail", cb_EHC1.SelectedItem.ToString());
-                globalParameter.eRails rail1 = globalParameter.eRails.Rail1;
-                switch (cb_EHC1.SelectedItem.ToString())
-                {
-                    case "Rail1": rail1 = globalParameter.eRails.Rail1; break;
-                    case "Rail2": rail1 = globalParameter.eRails.Rail2; break;
-                    case "Rail3": rail1 = globalParameter.eRails.Rail3; break;
-                    case "Rail4": rail1 = globalParameter.eRails.Rail4; break;
-                    default:
-                        break;
-                }
-                globalParameter.Lane1Rail = rail1;
+                globalParameter.Lane1Rail = cb_EHC1.SelectedItem.ToString();
+                UseConfigFile.SetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
 
-                globalParameter.eRails rail2 = globalParameter.eRails.Rail2;
-                UseConfigFile.SetStringConfigurationSetting("Lane2Rail", cb_EHC2.SelectedItem.ToString());
-                switch (cb_EHC2.SelectedItem.ToString())
-                {
-                    case "Rail1": rail2 = globalParameter.eRails.Rail1; break;
-                    case "Rail2": rail2 = globalParameter.eRails.Rail2; break;
-                    case "Rail3": rail2 = globalParameter.eRails.Rail3; break;
-                    case "Rail4": rail2 = globalParameter.eRails.Rail4; break;
-                    default:
-                        break;
-                }
-                globalParameter.Lane2Rail = rail2;
+                globalParameter.Lane2Rail = cb_EHC2.SelectedItem.ToString();
+                UseConfigFile.SetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
 
                 UseConfigFile.SetStringConfigurationSetting("UpstreamPLCTag", tbUpstreamPLCTag.Text);
                 UseConfigFile.SetStringConfigurationSetting("DownstreamPLCTag", tbDownstreamPLCTag.Text);
@@ -2692,10 +2687,15 @@ namespace AISIN_WFA
             }
         }
 
+        private void btn_PlcSettings_Click(object sender, EventArgs e)
+        {
+            PlcSetupWindow setup = new PlcSetupWindow();
+            setup.ShowDialog();
+        }
 
-#endregion
+        #endregion
 
-#region [Log]
+        #region [Log]
 
         public void LogWrite(string msg)
         {
@@ -3295,7 +3295,8 @@ namespace AISIN_WFA
         }
 
 
-#endregion
+
+        #endregion
 
 
     }
