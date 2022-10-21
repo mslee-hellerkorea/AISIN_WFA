@@ -120,6 +120,8 @@ namespace AISIN_WFA.Models
             {
                 try
                 {
+                    if (!CheckOvenAlive()) return;
+
                     // Get Light Tower State
                     Oven.LighTower = GetCurrentLightTowerColor();
 
