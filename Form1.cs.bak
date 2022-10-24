@@ -32,81 +32,80 @@
 // 29-Dec-20  01.17  DCH  Add debug information for downstream information print.
 // 06-Jun-22  01.18  DCH  Add the capibility to support "Mitsubshi" PLC.
 // 23-Sep-22  01-19  MSL  Debug the capibility to support "Mitsubishi" PLC.
-
+// 12-Oct-22  01-20  MSL  1) Add Trace Log.
+//                        2) Remove MX Component Label feature.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Timers;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using Newtonsoft.Json;
 using System.Text.RegularExpressions;
-using MITSUBISHI.Component;
-using System.Configuration;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
+using AISIN_WFA.Utility;
+using AISIN_WFA.Models;
+using AISIN_WFA.GUI;
 
 namespace AISIN_WFA
 {
+    public delegate void OcxUIupdate();
     public partial class Form1 : Form
     {
         #region [Members]
+        // Revision
+        private string revision = "1.20";
+        private OcxWrappercs ocx;
+        private MxWrapper UpstreamMxPlc;
+        private MxWrapper DownstreamMxPlc;
+        private OMRON.Compolet.CIP.CJ2Compolet compolet;
 
-        AxHELLERCOMMLib.AxHellerComm obj;
-        internal OMRON.Compolet.CIP.CJ2Compolet compolet;
-        //private AxActProgTypeLib.AxActProgType axActProgType1;
-        private ActUtlTypeLib.ActUtlType actUtlType = null;
-        private DotUtlType dotUtlType1;
         private bool RunFlag = true;
 
-        Mutex plcMutex;
-        Mutex ocxMutex;
-        Mutex logMutex;
-        Thread updateThread;
-        Thread upstreamThread;
-        Thread downstreamThread;
-        Socket barcodeSocket;
-        Boolean barcodeSocketConnected;
-        Boolean plcCommEnable;
-        Boolean BASignal;
-        Boolean closeOK;
-        Int32[] plcInputData;
-        Int32[] plcOutputData;
-        byte[] barcodeData;
-        byte[] tcpMsgData;
-        byte[] lane1BarcodeData;
-        byte[] lane2BarcodeData;
+        // [Mutex]
+        private Mutex plcMutex;
+        private Mutex logMutex;
+
+        // [Thread]
+        private Thread upstreamThread;
+        private Thread downstreamThread;
+
+        // PLC Data and State
+        private bool plcCommEnable;
+        private bool UpstreamMxPlcCommEnable;
+        private bool DownstreamMxPlcCommEnable;
+        private int upstreamPlcDisConnectCount = 0;
+        private int downstreamPlcDisConnectCount = 0;
+        private int[] plcInputData;
+        private int[] plcOutputData;
+        private byte[] barcodeData;
+
+        private int[] MxPlcBarcodeDataLane1;
+        private int[] MxPlcBarcodeDataLane2;
+
+        private int MxPlcBaSignalLane1 = 0;
+        private int MxPlcBaSignalLane2 = 0;
+
+        private bool BASignal;
+        private bool BASignalLane1;
+        private bool BASignalLane2;
+        private bool closeOK;
+
+        private byte[] lane1BarcodeData;
+        private byte[] lane2BarcodeData;
 
         private byte[] lane1BarcodeByte;
         private byte[] lane2BarcodeByte;
 
-        string barcodeFromUpLane1;
-        string barcodeFromUpLane2;
-        String upstreamPLCTag;
-        String downstreamPLCTag;
-        String logFilesFolder;
-        String barcodeSocketIP;
-        String tagIP;
-        int barcodeSocketPort;
-        float rail1Width;
-        float rail2Width;
-        float rail3Width;
-        float rail4Width;
-        int updatePeriod;
-        int upstreamPLCPeriod;
-        int downstreamPLCPeriod;
+        private string barcodeFromUpLane1;
+        private string barcodeFromUpLane2;
+
         int defaultRail;
-        Boolean railLogging;
-        Boolean barcodeRecipeEmptyDisplayed;
+        bool railLogging;
+        bool barcodeRecipeEmptyDisplayed;
         List<float> currentBeltSpeed = null;
         List<float> currentBeltWidth = null;
 
@@ -115,530 +114,268 @@ namespace AISIN_WFA
         const int TCP_MSG_MAX = 32;
         const int RAIL_MAX = 4;
         const int BELT_MAX = 3;
-        const int LIGHT_TOWER_OFF = 0;
-        const int LIGHT_TOWER_RED = 1;
-        const int LIGHT_TOWER_AMBER = 2;
-        const int LIGHT_TOWER_GREEN = 4;
+
         const int RAIL_WIDTH_ARRAY_NDX = 20;
         const int RAIL_WIDTH_ARRAY_NDX_2 = 120;
         const int BA_SIGNAL_ARRAY_NDX_LANE1 = 21;
         const int BA_SIGNAL_ARRAY_NDX_LANE2 = 121;
-        const String configurationKey = "HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader";
-        Thread waitForOvenEmptyToLoadRecipe = null;
-        private bool bWaitForOvenEmptytoLoadRecipe = false;
-        Thread waitForOvenEmptyToChangeWidthorSpeed = null;
-        //Thread waitForOvenEmptyTOChangeSpeed = null;
-        string nextRecipeToLoad = null;
-        int beltCount = 0;
-        bool[] CBSExisit = new bool[] { false, false };
-        string revision = "1.19";
 
-        const int NOTIFICATION_EVENT_LIGHT_TOWER_CHANGE = 30; //ver1.0.66, compatible HC2 software version 8.0.0.42
-        const int NOTIFICATION_EVENT_JOB_CHANGE = 40;
-        const int NOTIFICATION_EVENT_BOARD_ENTERED = 60;
-        const int NOTIFICATION_EVENT_BOARD_EXITED = 61;
-        const int NOTIFICATION_EVENT_LANE1_SMEMA_ENTRY_BA = 71;
-        const int NOTIFICATION_EVENT_LANE2_SMEMA_ENTRY_BA = 72;
-        const int NOTIFICATION_EVENT_LANE3_SMEMA_ENTRY_BA = 73;
-        const int NOTIFICATION_EVENT_LANE4_SMEMA_ENTRY_BA = 74;
-        const int NOTIFICATION_EVENT_LANE1_BOARD_ENTRY = 100;
-        const int NOTIFICATION_EVENT_LANE2_BOARD_ENTRY = 101;
-        const int NOTIFICATION_EVENT_LANE3_BOARD_ENTRY = 102;
-        const int NOTIFICATION_EVENT_LANE4_BOARD_ENTRY = 103;
-        const int NOTIFICATION_EVENT_LANE1_BOARD_EXIT = 104;
-        const int NOTIFICATION_EVENT_LANE2_BOARD_EXIT = 105;
-        const int NOTIFICATION_EVENT_LANE3_BOARD_EXIT = 106;
-        const int NOTIFICATION_EVENT_LANE4_BOARD_EXIT = 107;
+        private bool bWaitForOvenEmptytoLoadRecipe = false;
+        private Thread waitForOvenEmptyToChangeWidthorSpeed = null;
+        private string nextRecipeToLoad = null;
+        private int beltCount = 0;
+
         #endregion
+
         public Form1()
         {
+            HLog.StartupPath = Application.StartupPath + @"\Log\";
+
             InitializeComponent();
             Text = string.Format("AISIN Line Communication PLC Interface ({0})", revision);
             // add form closing
             this.FormClosing += new FormClosingEventHandler(MainForm_Closing);
+
             LoadConfigurationSettings();
+            InitializeMembers();
+            if (InitializeControl())
+                InitializePLC();
 
-            InitializeOCX();
+            //InitializeOCX();
         }
 
-        #region App.Config Methods
+        #region [Initialize]
 
-        public static string GetStringConfigurationSetting(string configurationName, string defaultValue)
-        {
-            string configValue = null;
-            try
-            {
-                var appSettings = ConfigurationManager.AppSettings;
-                configValue = appSettings[configurationName] ?? defaultValue;
-                if (configValue != null)
-                    return configValue;
-            }
-            catch
-            {
-            }
-            return defaultValue;
-        }
-
-
-        public static int GetIntConfigurationSetting(string configurationName, int defaultValue)
-        {
-            string configValue = null;
-            try
-            {
-                var appSettings = ConfigurationManager.AppSettings;
-                configValue = appSettings[configurationName] ?? defaultValue.ToString();
-                if (configValue != null)
-                    return Convert.ToInt32(configValue);
-            }
-            catch
-            {
-            }
-            return defaultValue;
-        }
-
-
-        public static bool GetBoolConfigurationSetting(string configurationName, bool defaultValue)
-        {
-            string configValue = null;
-            try
-            {
-                var appSettings = ConfigurationManager.AppSettings;
-                configValue = appSettings[configurationName] ?? defaultValue.ToString();
-
-                if (configValue != null)
-                    return Convert.ToBoolean(configValue);
-            }
-            catch
-            {
-            }
-            return defaultValue;
-        }
-
-        public static void SetBoolConfigurationSetting(string configurationName, bool value)
+        private void InitializeMembers()
         {
             try
             {
-                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                var settings = configFile.AppSettings.Settings;
-                if (settings[configurationName] == null)
+                // initialize buffers
+                plcInputData = new Int32[PLC_MEMORY_MAX];
+                Array.Clear(plcInputData, 0, PLC_MEMORY_MAX);
+
+                MxPlcBarcodeDataLane1 = new Int32[BARCODE_MAX];
+                Array.Clear(MxPlcBarcodeDataLane1, 0, BARCODE_MAX);
+
+                MxPlcBarcodeDataLane2 = new Int32[BARCODE_MAX];
+                Array.Clear(MxPlcBarcodeDataLane2, 0, BARCODE_MAX);
+
+                plcOutputData = new Int32[PLC_MEMORY_MAX];
+                Array.Clear(plcOutputData, 0, PLC_MEMORY_MAX);
+
+                barcodeData = new byte[BARCODE_MAX];
+                Array.Clear(barcodeData, 0, BARCODE_MAX);
+
+                lane1BarcodeData = new byte[TCP_MSG_MAX];
+                Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
+
+                lane2BarcodeData = new byte[TCP_MSG_MAX];
+                Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
+
+                lane1BarcodeByte = new byte[BARCODE_MAX];
+                Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
+
+                lane2BarcodeByte = new byte[BARCODE_MAX];
+                Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
+
+                logMutex = new Mutex();
+                globalFunctions.initializeBarcodeRecipeTable();
+
+                // initialize booleans
+                BASignal = false;
+
+                closeOK = false;
+                barcodeRecipeEmptyDisplayed = false;
+
+                // initialize mutex
+                plcMutex = new Mutex();
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"InitializeMembers - {ex.Message}");
+                MessageBox.Show(ex.Message, "EXCEPTION");
+            }
+        }
+
+        private bool InitializeControl()
+        {
+            bool isConnect = false;
+            try
+            {
+                ocx = new OcxWrappercs();
+                ChannelInfo.GetChannelInfo();
+                ocx.UpdateUI += UpdatingValuesOcx;
+                isConnect = ocx.InitWrapper();
+
+                // hold smema for all lanes
+                if (globalParameter.holdSmemaUntilBarcode)
                 {
-                    settings.Add(configurationName, value.ToString());
+                    for (int i = 0; i < 2; i++)
+                    {
+                        SmemaLaneHold(i, 1);
+                    }
                 }
                 else
                 {
-                    settings[configurationName].Value = value.ToString();
+                    for (int i = 0; i < 2; i++)
+                    {
+                        SmemaLaneHold(i, 0);
+                    }
                 }
-                configFile.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
             }
-            catch
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, $"InitializeControl - {ex.Message}");
+                MessageBox.Show(ex.Message, "EXCEPTION");
             }
+            return isConnect;
         }
-        public static void SetStringConfigurationSetting(string configurationName, string value)
+
+        private void InitializePLC()
         {
             try
             {
-                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                var settings = configFile.AppSettings.Settings;
-                if (settings[configurationName] == null)
+                // Create instance
+                switch (globalParameter.PLCType)
                 {
-                    settings.Add(configurationName, value);
-                }
-                else
-                {
-                    settings[configurationName].Value = value;
-                }
-                configFile.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-            }
-            catch
-            {
-            }
-        }
-        public static void SetIntConfigurationSetting(string configurationName, int value)
-        {
-            try
-            {
-                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                var settings = configFile.AppSettings.Settings;
-                if (settings[configurationName] == null)
-                {
-                    settings.Add(configurationName, value.ToString());
-                }
-                else
-                {
-                    settings[configurationName].Value = value.ToString();
-                }
-                configFile.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-            }
-            catch
-            {
-            }
-        }
-
-        /// <summary>
-        /// Loads all the configuration settings.
-        /// </summary>
-        protected void LoadConfigurationSettings()
-        {
-            // Init
-            foreach (globalParameter.eRails rail in Enum.GetValues(typeof(globalParameter.eRails)))
-            {
-                cb_EHC1.Items.Add(rail.ToString());
-                cb_EHC2.Items.Add(rail.ToString());
-            }
-
-            // Set
-            // AutoBarcodeRecipe
-            globalParameter.autoChangeRecipeWidthSpeed = GetBoolConfigurationSetting("AutoBarcodeRecipe", globalParameter.autoChangeRecipeWidthSpeed);
-
-            // HoldSmemaBarcode
-            globalParameter.holdSmemaUntilBarcode = GetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
-
-            // LogFilePath
-            string logfilePath = globalParameter.LogFilePath;
-            logfilePath = GetStringConfigurationSetting("LogFilePath", logfilePath);
-            globalParameter.LogFilePath = logfilePath;
-            tbLogFilesFolder.Text = logfilePath;
-
-            // PLCType
-            string plcType = globalParameter.PLCType.ToString();
-            plcType = GetStringConfigurationSetting("PLCType", plcType);
-            switch (plcType)
-            {
-                case "OMRON":
-                    globalParameter.PLCType = globalParameter.ePLCType.OMRON;
-                    break;
-                case "Mitsubishi":
-                    globalParameter.PLCType = globalParameter.ePLCType.Mitsubishi;
-                    break;
-                default:
-                    globalParameter.PLCType = globalParameter.ePLCType.None;
-                    break;
-            }
-            combo_PLCType.Text = globalParameter.PLCType.ToString();
-
-            // PLC Station number
-            int plcStation = globalParameter.PlcStation;
-            plcStation = GetIntConfigurationSetting("PLCStation", plcStation);
-            globalParameter.PlcStation = plcStation;
-
-            // Lane1EHC
-            string ehc1rail = globalParameter.Lane1EHC.ToString();
-            ehc1rail = GetStringConfigurationSetting("Lane1EHC", ehc1rail);
-            switch (ehc1rail)
-            {
-                case "Rail1":
-                    globalParameter.Lane1EHC = globalParameter.eRails.Rail1;
-                    break;
-                case "Rail2":
-                    globalParameter.Lane1EHC = globalParameter.eRails.Rail2;
-                    break;
-                case "Rail3":
-                    globalParameter.Lane1EHC = globalParameter.eRails.Rail3;
-                    break;
-                case "Rail4":
-                    globalParameter.Lane1EHC = globalParameter.eRails.Rail4;
-                    break;
-                default:
-                    globalParameter.Lane1EHC = globalParameter.eRails.Rail1;
-                    break;
-            }
-            cb_EHC1.Text = globalParameter.Lane1EHC.ToString();
-
-            // Lane2EHC
-            string ehc2rail = globalParameter.Lane2EHC.ToString();
-            ehc1rail = GetStringConfigurationSetting("Lane2EHC", ehc2rail);
-            switch (ehc2rail)
-            {
-                case "Rail1":
-                    globalParameter.Lane2EHC = globalParameter.eRails.Rail1;
-                    break;
-                case "Rail2":
-                    globalParameter.Lane2EHC = globalParameter.eRails.Rail2;
-                    break;
-                case "Rail3":
-                    globalParameter.Lane2EHC = globalParameter.eRails.Rail3;
-                    break;
-                case "Rail4":
-                    globalParameter.Lane2EHC = globalParameter.eRails.Rail4;
-                    break;
-                default:
-                    globalParameter.Lane2EHC = globalParameter.eRails.Rail2;
-                    break;
-            }
-            cb_EHC2.Text = globalParameter.Lane2EHC.ToString();
-
-        }
-        #endregion
-
-
-
-        //---------------------------------------------------------------------
-        // Method InitializeOCX
-        //
-        // Instantiate and start iMagic ActiveX object
-        //---------------------------------------------------------------------
-        private void InitializeOCX()
-        {
-            // not recommended
-            Control.CheckForIllegalCrossThreadCalls = false;
-            logMutex = new Mutex();
-            LogWrite("ASIN line software: " + revision);
-
-            // access Heller COMM Control ActiveX
-            obj = new AxHELLERCOMMLib.AxHellerComm();
-            obj.CreateControl();
-            bool result = obj.StartCommunicating(1);
-            if (!result)
-                MessageBox.Show("StartCommunicating failure");
-            result = obj.StartOven();
-            if (!result)
-                MessageBox.Show("StartOven failure");
-
-            // hook notification events
-            obj.NotificationEvent += new AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEventHandler(this.NotificationEvent);
-
-            // initialize buffers
-            plcInputData = new Int32[PLC_MEMORY_MAX];
-            Array.Clear(plcInputData, 0, PLC_MEMORY_MAX);
-            plcOutputData = new Int32[PLC_MEMORY_MAX];
-            Array.Clear(plcOutputData, 0, PLC_MEMORY_MAX);
-            barcodeData = new byte[BARCODE_MAX];
-            Array.Clear(barcodeData, 0, BARCODE_MAX);
-            //tcpMsgData = new byte[TCP_MSG_MAX];
-            //Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
-
-            lane1BarcodeData = new byte[TCP_MSG_MAX];
-            Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
-            lane2BarcodeData = new byte[TCP_MSG_MAX];
-            Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
-
-            lane1BarcodeByte = new byte[BARCODE_MAX];
-            Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
-            lane2BarcodeByte = new byte[BARCODE_MAX];
-            Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
-
-            // initialize booleans
-            barcodeSocketConnected = false;
-            BASignal = false;
-            plcCommEnable = true;
-            closeOK = false;
-            barcodeRecipeEmptyDisplayed = false;
-
-            // initialize other
-            rail1Width = 0;
-            rail2Width = 0;
-            rail3Width = 0;
-            rail4Width = 0;
-
-            ocxMutex = new Mutex();
-#if false   // 25-Sep-22 MSL v1.19 - Move to LoadConfigurationSettings()
-            globalParameter.autoChangeRecipeWidthSpeed = Properties.Settings.Default.AutoBarcodeRecipe;
-            globalParameter.holdSmemaUntilBarcode = Properties.Settings.Default.HoldSmemaBarcode;
-#endif
-            // hold smema for all lanes
-            if (globalParameter.holdSmemaUntilBarcode)
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    SmemaLaneHold(i, 1);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    SmemaLaneHold(i, 0);
-                }
-            }
-
-            // read barcode recipe mapping table.
-            globalFunctions.initializeBarcodeRecipeTable();
-            initializeBeltSpeedCountAndCBS();
-
-            // initialize mutex
-            plcMutex = new Mutex();
-
-            // read configuration
-            tbUpstreamPLCTag.Text = upstreamPLCTag = (String)Registry.GetValue(configurationKey, "UpstreamPLCTag", "RE1inAMCV1");
-            tbDownstreamPLCTag.Text = downstreamPLCTag = (String)Registry.GetValue(configurationKey, "DownstreamPLCTag", "RE1outAMCV1");
-            tbTagIP.Text = tagIP = (String)Registry.GetValue(configurationKey, "TagIP", "192.168.241.9");
-
-            // 25-Sep-22 MSL v1.19 - Move to LoadConfigurationSettings()
-            //tbLogFilesFolder.Text = globalParameter.debugLogFolder = Properties.Settings.Default.LogFilePath;
-
-
-#if false   // 25-Sep-22 MSL v1.19 - Move to LoadConfigurationSettings()
-            combo_PLCType.Text = globalParameter.PLCType = Properties.Settings.Default.PLCType; // 25-Sep-22 MSL v1.19
-#endif
-            //barcodeSocketIP = (String)Registry.GetValue(configurationKey, "IP", "127.0.0.1");
-
-
-
-            try
-            {
-            	barcodeSocketPort = (int)Registry.GetValue(configurationKey, "Port", 31000);
-            }
-            catch (Exception e)
-            {
-                barcodeSocketPort = 31000;
-            }
-            try
-            {
-                updatePeriod = (int)Registry.GetValue(configurationKey, "UpdatePeriod", 2000);
-            }
-            catch (Exception e)
-            {
-                updatePeriod = 2000;
-            }
-            try
-            {
-                upstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "UpstreamPLCPeriod", 1000);
-            }
-            catch (Exception e)
-            {
-                upstreamPLCPeriod = 1000;
-            }
-            try
-            {
-                downstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "DownstreamPLCPeriod", 1000);
-            }
-            catch (Exception e)
-            {
-                downstreamPLCPeriod = 1000;
-            }
-            try
-            {
-                defaultRail = (int)Registry.GetValue(configurationKey, "DefaultRail", 0);
-            }
-            catch (Exception e)
-            {
-                defaultRail = 0;
-            }
-            try
-            {
-                string strLog = (string)Registry.GetValue(configurationKey, "RailLogging", "false");
-                switch (strLog)
-                {
-                    case "true":
-                        railLogging = true;
+                    case globalParameter.ePLCType.None:
+                        {
+                            MessageBox.Show("Please setup to PLC Type");
+                        }
                         break;
-                    case "false":
-                        railLogging = false;
+                    case globalParameter.ePLCType.OMRON:
+                        {
+                            compolet = new OMRON.Compolet.CIP.CJ2Compolet();
+                            plcCommEnable = true;
+                            //start downstream PLC thread
+                            UpDownstreamThread();
+                        }
+                        break;
+                    case globalParameter.ePLCType.Mitsubishi:
+                        {
+                            int UpStation = globalParameter.UpstreamMxPlcStation;
+                            int DownStation = globalParameter.DownstreamMxPlcStation;
+
+                            UpstreamMxPlc = new MxWrapper(UpStation);
+                            DownstreamMxPlc = new MxWrapper(DownStation);
+
+
+                            UpstreamMxPlcCommEnable = UpstreamMxPlc.BConnected;
+                            DownstreamMxPlcCommEnable = DownstreamMxPlc.BConnected;
+
+                            UpDownstreamThread();
+                        }
                         break;
                     default:
-                        railLogging = false;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"InitializePLC - {ex.Message}");
+                MessageBox.Show(ex.Message, "EXCEPTION");
+            }
+        }
+
+        protected void LoadConfigurationSettings()
+        {
+            try
+            {
+                // --------------------------------------------
+                // Get from app.config
+                // --------------------------------------------
+                // BoardTransitLogPath
+                globalParameter.BoardTransitLogPath = UseConfigFile.GetStringConfigurationSetting("BoardTransitLogPath", globalParameter.BoardTransitLogPath);
+
+                // DefaultRail
+                globalParameter.DefaultRail = UseConfigFile.GetIntConfigurationSetting("DefaultRail", globalParameter.DefaultRail);
+
+                // DefaultRail
+                globalParameter.DownstreamPLCPeriod = UseConfigFile.GetIntConfigurationSetting("DownstreamPLCPeriod", globalParameter.DownstreamPLCPeriod);
+
+                // UpstreamPLCPeriod 
+                globalParameter.UpstreamPLCPeriod = UseConfigFile.GetIntConfigurationSetting("UpstreamPLCPeriod", globalParameter.UpstreamPLCPeriod);
+
+                // UpdatePeriod  
+                globalParameter.UpdatePeriod = UseConfigFile.GetIntConfigurationSetting("UpdatePeriod", globalParameter.UpdatePeriod);
+
+                // TagIP  
+                globalParameter.TagIP = UseConfigFile.GetStringConfigurationSetting("TagIP", globalParameter.TagIP);
+                UpdatingValues("tbTagIP", globalParameter.TagIP);
+
+                // DownstreamPLCTag  
+                globalParameter.DownstreamPLCTag = UseConfigFile.GetStringConfigurationSetting("DownstreamPLCTag", globalParameter.DownstreamPLCTag);
+                UpdatingValues("tbDownstreamPLCTag", globalParameter.DownstreamPLCTag);
+
+                // UpstreamPLCTag   
+                globalParameter.UpstreamPLCTag = UseConfigFile.GetStringConfigurationSetting("UpstreamPLCTag", globalParameter.UpstreamPLCTag);
+                UpdatingValues("tbUpstreamPLCTag", globalParameter.UpstreamPLCTag);
+
+                // RailLogging    
+                globalParameter.RailLogging = UseConfigFile.GetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
+
+                // AutoBarcodeRecipe
+                globalParameter.autoChangeRecipeWidthSpeed = UseConfigFile.GetBoolConfigurationSetting("AutoBarcodeRecipe", globalParameter.autoChangeRecipeWidthSpeed);
+
+                // HoldSmemaBarcode
+                globalParameter.holdSmemaUntilBarcode = UseConfigFile.GetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
+
+                // LogFilePath
+                string logfilePath = globalParameter.LogFilePath;
+                logfilePath = UseConfigFile.GetStringConfigurationSetting("LogFilePath", logfilePath);
+                globalParameter.LogFilePath = logfilePath;
+
+                // PLCType
+                string plcType = globalParameter.PLCType.ToString();
+                plcType = UseConfigFile.GetStringConfigurationSetting("PLCType", plcType);
+
+                switch (plcType)
+                {
+                    case "OMRON":
+                        globalParameter.PLCType = globalParameter.ePLCType.OMRON;
+                        break;
+                    case "Mitsubishi":
+                        globalParameter.PLCType = globalParameter.ePLCType.Mitsubishi;
+                        btnStartComm.Visible = false;
+                        break;
+                    default:
+                        globalParameter.PLCType = globalParameter.ePLCType.None;
                         break;
                 }
 
-                //railLogging = (Boolean)Registry.GetValue(configurationKey, "RailLogging", false);
+                // PLC Station number
+                globalParameter.UpstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("PLCStation", globalParameter.UpstreamMxPlcStation);
+
+                globalParameter.UpstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("UpstreamMxPlcStation", globalParameter.UpstreamMxPlcStation);
+                globalParameter.DownstreamMxPlcStation = UseConfigFile.GetIntConfigurationSetting("DownstreamMxPlcStation", globalParameter.DownstreamMxPlcStation);
+
+                // Mx Address
+                globalParameter.AddrMxBarcodeLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxBarcodeLane1", globalParameter.AddrMxBarcodeLane1);
+                globalParameter.AddrMxBarcodeLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxBarcodeLane2", globalParameter.AddrMxBarcodeLane2);
+                globalParameter.AddrMxBoardAvailableLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxBoardAvailableLane1", globalParameter.AddrMxBoardAvailableLane1);
+                globalParameter.AddrMxBoardAvailableLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
+                globalParameter.AddrMxRailWidthLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
+                globalParameter.AddrMxRailWidthLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
+
+                string lane1enable = globalParameter.UpstreamEnableLane1.ToString();
+                string lane2enable = globalParameter.UpstreamEnableLane2.ToString();
+                lane1enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane1", lane1enable);
+                lane2enable = UseConfigFile.GetStringConfigurationSetting("UpstreamEnableLane2", lane2enable);
+                globalParameter.UpstreamEnableLane1 = lane1enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+                globalParameter.UpstreamEnableLane2 = lane2enable == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
+
+                // Lane1EHC
+                globalParameter.Lane1Rail = UseConfigFile.GetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
+
+                // Lane2EHC
+                globalParameter.Lane2Rail = UseConfigFile.GetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
+
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                railLogging = false;
+                HLog.log(HLog.eLog.EXCEPTION, $"LoadConfigurationSettings - {ex.Message}");
+                MessageBox.Show(ex.Message, "EXCEPTION");
             }
-
-            switch (defaultRail)
-            {
-                case 0:
-                    radioButtonRail1.Checked = true;
-                    radioButtonRail2.Checked = false;
-                    radioButtonRail3.Checked = false;
-                    radioButtonRail4.Checked = false;
-                    break;
-                case 1:
-                    radioButtonRail1.Checked = false;
-                    radioButtonRail2.Checked = true;
-                    radioButtonRail3.Checked = false;
-                    radioButtonRail4.Checked = false;
-                    break;
-                case 2:
-                    radioButtonRail1.Checked = false;
-                    radioButtonRail2.Checked = false;
-                    radioButtonRail3.Checked = true;
-                    radioButtonRail4.Checked = false;
-                    break;
-                case 3:
-                    radioButtonRail1.Checked = false;
-                    radioButtonRail2.Checked = false;
-                    radioButtonRail3.Checked = false;
-                    radioButtonRail4.Checked = true;
-                    break;
-            }
-
-
-
-            // start display update thread
-            updateThread = new Thread(new ThreadStart(UpdateThread));
-            updateThread.Start();
-
-            // 23-Sep-22 MSL v1.19
-#if true
-            // Create instance
-            switch (globalParameter.PLCType)
-            {
-                case globalParameter.ePLCType.None:
-                    {
-                        MessageBox.Show("Please setup to PLC Type");
-                    }
-                    break;
-                case globalParameter.ePLCType.OMRON:
-                    {
-                        compolet = new OMRON.Compolet.CIP.CJ2Compolet();
-                        //start downstream PLC thread
-                        UpDownstreamThread();
-                    }
-                    break;
-                case globalParameter.ePLCType.Mitsubishi:
-                    {
-                        lbPlcStation.Visible = true;
-                        tbPlcStation.Visible = true;
-
-                        tbPlcStation.Text = globalParameter.PlcStation.ToString();
-                        int station = globalParameter.PlcStation;
-                        //dotUtlType1 = new DotUtlType() { ActLogicalStationNumber = station};
-                        //dotUtlType1.Open();
-                        actUtlType = new ActUtlTypeLib.ActUtlType();
-                        actUtlType.ActLogicalStationNumber = station;
-                        actUtlType.Open();
-
-                        UpDownstreamThread();
-                    }
-                    break;
-                default:
-                    break;
-            }
-#else
-            if (globalParameter.PLCType != "None")
-            {
-                if (globalParameter.PLCType == "Mitsubishi")
-                {
-                    dotUtlType1.Open();
-                }
-
-                // start downstream PLC thread
-                downstreamThread = new Thread(new ThreadStart(DownstreamThread));
-                downstreamThread.Start();
-
-                // start upstream PLC thread
-                upstreamThread = new Thread(new ThreadStart(UpstreamThread));
-                upstreamThread.Start();
-            }
-#endif
-
-        }
-
-        private void UpDownstreamThread()
-        {
-            downstreamThread = new Thread(new ThreadStart(DownstreamThread));
-            downstreamThread.Start();
-
-            // start upstream PLC thread
-            upstreamThread = new Thread(new ThreadStart(UpstreamThread));
-            upstreamThread.Start();
         }
 
         //---------------------------------------------------------------------
@@ -651,173 +388,1086 @@ namespace AISIN_WFA
             // Do work something
         }
 
-        private void initializeBeltSpeedCountAndCBS()
-        {
-            beltCount = GetBeltCount();
-            for (int i = 0; i < 2; i++)
-            {
-                CBSExisit[i] = CheckCBSExist(i);
-            }
+        #endregion
 
-            // double check CBS
-            if (GetRailSetPoint(2) > 0)
-                CBSExisit[0] = true;
-            if (GetRailSetPoint(3) > 0)
-                CBSExisit[1] = true;
-        }
-
-        private void NotificationEvent(object sender, AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEvent e)
-        {
-            int iResult = 0;
-            float fResult = 0.0F;
-            string sResult = null;
-            int[] iArg = new int[3];        //1.0.82 extend 2 -> 3 
-            string[] sArg = new string[1];
-            int lane;
-
-            // switch on type of notification
-            switch (e.lEventID)
-            {
-                case NOTIFICATION_EVENT_BOARD_ENTERED:
-                    break;
-                case NOTIFICATION_EVENT_BOARD_EXITED:
-                    break;
-                case NOTIFICATION_EVENT_JOB_CHANGE:
-                    break;
-                case NOTIFICATION_EVENT_LANE1_BOARD_ENTRY:
-                    {
-                        // hold smema for lane1 again
-                        SmemaLaneHold(0, 1);
-                        LogWrite("Board entered on lane1, hold smema again.");
-                    }
-                    break;
-                case NOTIFICATION_EVENT_LANE2_BOARD_ENTRY:
-                    {
-                        // hold smema for lane2 again
-                        SmemaLaneHold(1, 1);
-                        LogWrite("Board eentered on lane2, hold smema again");
-                    }
-                    break;
-                case NOTIFICATION_EVENT_LANE3_BOARD_ENTRY:
-                    break;
-                case NOTIFICATION_EVENT_LANE4_BOARD_ENTRY:
-                    break;
-                case NOTIFICATION_EVENT_LANE1_BOARD_EXIT:
-                    break;
-                case NOTIFICATION_EVENT_LANE2_BOARD_EXIT:
-                    break;
-                case NOTIFICATION_EVENT_LANE3_BOARD_EXIT:
-                    break;
-                case NOTIFICATION_EVENT_LANE4_BOARD_EXIT:
-                    break;
-            }
-        }
+        #region [Threads]
 
         //---------------------------------------------------------------------
-        // Method UpdateThread
+        // Method UpstreamThread
         //---------------------------------------------------------------------
-        private void UpdateThread()
+        private void UpstreamThread()
         {
-            // forever
             //while (true)
             while (RunFlag)
             {
-                // query light tower color
-                short lightTowerColor = obj.GetCurrentLightTowerColor();
-                switch (lightTowerColor)
+
+                switch (globalParameter.PLCType)
                 {
-                    case LIGHT_TOWER_OFF:
-                        tbLightTowerColor.Text = "Off";
+                    case globalParameter.ePLCType.None:
                         break;
-                    case LIGHT_TOWER_RED:
-                        tbLightTowerColor.Text = "Red";
+                    case globalParameter.ePLCType.OMRON:
+                        {
+                            //-----------------------------------------------
+                            // if plc communications enabled
+                            if (plcCommEnable)
+                            {
+                                try
+                                {
+                                    // lock access to PLC
+                                    plcMutex.WaitOne();
+
+                                    try
+                                    {
+                                        plcInputData = (Int32[])this.compolet.ReadVariable(globalParameter.UpstreamPLCTag);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //this.compolet.PeerAddress = (String)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader", "TagIP", "192.168.241.2");
+                                        this.compolet.PeerAddress = globalParameter.TagIP;
+
+                                        // give him another retry
+                                        if (plcCommEnable)
+                                        {
+                                            plcCommEnable = false;
+                                            continue;
+                                        }
+                                        //btnStartComm.Text = "Start Comm";
+                                        UpdatingValues("btnStartComm", "Start Comm");
+
+                                        MessageBox.Show("Omron CX-Compolet ReadVariable " + globalParameter.UpstreamPLCTag + " exception " + e.Message);
+                                    }
+
+                                    // unlock access to PLC
+                                    plcMutex.ReleaseMutex();
+                                }
+                                catch (Exception ex)
+                                {
+                                    HLog.log(HLog.eLog.EXCEPTION, $"UpstreamThread exception during plcMutex - {ex.Message}");
+                                }
+
+                                try
+                                {
+                                    // Always update current read barcode value
+                                    UpdateBarcodeString();
+
+                                    // test BA signal transition from OFF to ON
+                                    if (BASignal == false &&
+                                        (plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1] != 0 || plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2] != 0))    // daniel modified,  remove barcode socket check.
+                                    {
+                                        //// copy barcode to tcp message buffer
+                                        //Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
+                                        LogWrite("Clear barcode array");
+                                        Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
+                                        Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
+
+                                        // Line1 Barcode
+                                        for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                                        {
+                                            byte barcode1Digit;
+
+                                            // Big endian
+                                            if ((ndx & 1) == 1)
+                                                barcode1Digit = (byte)(plcInputData[ndx / 2] & 0xFF);
+                                            else
+                                                barcode1Digit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
+                                            if (barcode1Digit == 0)
+                                                break;
+                                            lane1BarcodeData[ndx] = barcode1Digit;
+                                        }
+
+                                        int startIndex = 100;
+                                        byte barcode2Digit;
+
+                                        for (int ndx = startIndex; ndx < startIndex + BARCODE_MAX; ndx++)
+                                        {
+                                            // Big endian
+                                            if ((ndx & 1) == 1)
+                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] & 0xFF);
+                                            else
+                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] >> 8 & 0xFF);
+                                            if (barcode2Digit == 0)
+                                                break;
+                                            lane2BarcodeData[ndx - startIndex] = barcode2Digit;
+                                        }
+
+                                        // deal with this barcode
+                                        if (lane1BarcodeData[0] != 0)
+                                        {
+                                            barcodeFromUpLane1 = System.Text.Encoding.Default.GetString(lane1BarcodeData);
+                                            barcodeFromUpLane1 = Encoding.ASCII.GetString(lane1BarcodeData, 0, lane1BarcodeData.Length);
+                                            int offset = barcodeFromUpLane1.IndexOf("\r\n");
+                                            if (offset < 0)
+                                                offset = barcodeFromUpLane1.IndexOf('\r');
+                                            if (offset < 0)
+                                                offset = barcodeFromUpLane1.IndexOf('\n');
+                                            if (offset > 0)
+                                                barcodeFromUpLane1 = barcodeFromUpLane1.Substring(0, offset);
+
+                                            // 1.07 revision,  trim barcode before using it for changing recipe or speed or length.
+                                            barcodeFromUpLane1 = barcodeFromUpLane1.Trim().Replace(" ", "");
+                                            LogWrite("Acquired barcode for lane1: " + barcodeFromUpLane1);
+                                            UpdatingValues("tbBarcodeLane1", barcodeFromUpLane1);
+                                            ocx.Lane1Barcode = barcodeFromUpLane1.Replace("\0", "");
+                                        }
+
+                                        if (lane2BarcodeData[0] != 0)
+                                        {
+                                            barcodeFromUpLane2 = System.Text.Encoding.Default.GetString(lane2BarcodeData);
+                                            barcodeFromUpLane2 = Encoding.ASCII.GetString(lane2BarcodeData, 0, lane2BarcodeData.Length);
+                                            int offset = barcodeFromUpLane2.IndexOf("\r\n");
+                                            if (offset < 0)
+                                                offset = barcodeFromUpLane2.IndexOf('\r');
+                                            if (offset < 0)
+                                                offset = barcodeFromUpLane2.IndexOf('\n');
+                                            if (offset > 0)
+                                                barcodeFromUpLane2 = barcodeFromUpLane2.Substring(0, offset);
+
+                                            barcodeFromUpLane2 = barcodeFromUpLane2.Trim().Replace(" ", "");
+                                            LogWrite("Acquired barcode for lane2: " + barcodeFromUpLane2);
+                                            //tbBarcodeLane2.Text = barcodeFromUpLane2;
+                                            UpdatingValues("tbBarcodeLane2", barcodeFromUpLane2);
+                                            ocx.Lane2Barcode = barcodeFromUpLane2.Replace("\0", "");
+                                        }
+
+                                        // do nothing if hold smema until barcode scan is not enabled.
+                                        if (!globalParameter.holdSmemaUntilBarcode)
+                                            continue;
+
+                                        if (!globalParameter.autoChangeRecipeWidthSpeed)
+                                        {
+                                            // change recipe,  width, speed not enabled, release smema when barcode is scanned.
+                                            if (lane1BarcodeData[0] != 0)
+                                            {
+                                                LogWrite("Auto load recipe not enabled, release smema for l.");
+                                                SmemaLaneHold(0, 0);
+                                            }
+                                            if (lane2BarcodeData[0] != 0)
+                                            {
+                                                LogWrite("Auto load recipe not enabled, release smema for 2.");
+                                                SmemaLaneHold(1, 0);
+                                            }
+                                            continue;
+                                        }
+
+                                        if (lane1BarcodeData[0] != 0)
+                                        {
+                                            LogWrite("Start to check barcode recipe for lane1");
+                                            CheckBarcodeRecipe(0, barcodeFromUpLane1);
+                                        }
+
+                                        if (lane2BarcodeData[0] != 0)
+                                        {
+                                            LogWrite("Start to check barcode recipe for lane2");
+                                            CheckBarcodeRecipe(1, barcodeFromUpLane2);
+                                        }
+
+                                        // flag BA signal true
+                                        BASignal = true;
+                                    }
+
+                                    // test BA signal transition from ON to OFF
+                                    if (BASignal &&
+                                        plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1] == 0
+                                        && plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2] == 0)
+                                    {
+                                        BASignal = false;
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogWrite(ex.Message);
+                                }
+                            }
+                        }
                         break;
-                    case LIGHT_TOWER_AMBER:
-                        tbLightTowerColor.Text = "Amber";
-                        break;
-                    case LIGHT_TOWER_GREEN:
-                        tbLightTowerColor.Text = "Green";
+                    case globalParameter.ePLCType.Mitsubishi:
+                        {
+                            //-----------------------------------------------
+                            // if plc communications enabled
+                            if (UpstreamMxPlc.BConnected)
+                            {
+                                try
+                                {
+                                    // lock access to PLC
+                                    plcMutex.WaitOne();
+
+                                    try
+                                    {
+
+
+                                        // Read PLC data
+                                        // MxPlcBarcodeDataLane1
+                                        // MxPlcBarcodeDataLane2
+                                        // MxPlcBaSignalLane1
+                                        // MxPlcBaSignalLane2
+
+                                        ReadBarcodeDataFromPLC();
+                                        ReadBoardAvailableFromPLC();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show("Mitsubishi MX Component ReadVariable " + globalParameter.UpstreamPLCTag + " exception " + ex.Message);
+                                    }
+
+                                    // unlock access to PLC
+                                    plcMutex.ReleaseMutex();
+                                }
+                                catch (Exception ex)
+                                {
+                                    HLog.log(HLog.eLog.EXCEPTION, $"UpstreamThread exception during plcMutex - {ex.Message}");
+                                }
+
+                                try
+                                {
+                                    // Always update current read barcode value
+                                    UpdateBarcodeMxString();
+
+                                    foreach (globalParameter.eLane lane in Enum.GetValues(typeof(globalParameter.eLane)))
+                                    {
+                                        UpstreamBarcodeOperation(lane);
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogWrite(ex.Message);
+                                }
+                            }
+
+                            if (!UpstreamMxPlc.IsOnline())
+                            {
+                                upstreamPlcDisConnectCount++;
+                                if (upstreamPlcDisConnectCount > 5)
+                                {
+                                    MessageBox.Show("Mitsubishi Upstream MX Component disconnected, Please check the PLC connection state");
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                upstreamPlcDisConnectCount = 0;
+                            }
+                        }
                         break;
                     default:
-                        tbLightTowerColor.Text = lightTowerColor.ToString("0");
                         break;
                 }
 
-                // query rail width process values
-                float railWidth;
-                Object variant = obj.GetRailWidth(1);
-                if (variant == null)
-                    railWidth = -1;
-                else
-                    railWidth = (float)variant;
-                tbRail1WidthPV.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(2);
-                if (variant == null)
-                    railWidth = -1;
-                else
-                    railWidth = (float)variant;
-                tbRail2WidthPV.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(3);
-                if (variant == null)
-                    railWidth = -1;
-                else
-                    railWidth = (float)variant;
-                tbRail3WidthPV.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(4);
-                if (variant == null)
-                    railWidth = -1;
-                else
-                    railWidth = (float)variant;
-                tbRail4WidthPV.Text = railWidth.ToString();
 
-                // query rail width setpoints
-                variant = obj.GetRailWidth(101);
-                railWidth = (float)variant;
-                if (railWidth <= 1000.0)
-                    rail1Width = railWidth;
-                tbRail1WidthSP.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(102);
-                railWidth = (float)variant;
-                if (railWidth <= 1000.0)
-                    rail2Width = railWidth;
-                tbRail2WidthSP.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(103);
-                railWidth = (float)variant;
-                if (railWidth <= 1000.0)
-                    rail3Width = railWidth;
-                tbRail3WidthSP.Text = railWidth.ToString();
-                variant = obj.GetRailWidth(104);
-                railWidth = (float)variant;
-                if (railWidth <= 1000.0)
-                    rail4Width = railWidth;
-                tbRail4WidthSP.Text = railWidth.ToString();
 
-                // query boards processed count (49..51,54)
-                float beltProcessed = obj.GetChannel(49);
-                tbBelt1Processed.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(50);
-                tbBelt2Processed.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(51);
-                tbBelt3Processed.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(54);
-                tbBelt4Processed.Text = beltProcessed.ToString();
+                // snooze
+                Thread.Sleep(globalParameter.UpstreamPLCPeriod);
+            }
+        }
 
-                // query boards in oven count (46..48,53)
-                beltProcessed = obj.GetChannel(46);
-                tbBelt1InOven.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(47);
-                tbBelt2InOven.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(48);
-                tbBelt3InOven.Text = beltProcessed.ToString();
-                beltProcessed = obj.GetChannel(53);
-                tbBelt4InOven.Text = beltProcessed.ToString();
+        //---------------------------------------------------------------------
+        // Method DownstreamThread
+        //---------------------------------------------------------------------
+        private void DownstreamThread()
+        {
+            //while (true)
+            while (RunFlag)
+            {
 
+                switch (globalParameter.PLCType)
+                {
+                    case globalParameter.ePLCType.None:
+                        break;
+                    case globalParameter.ePLCType.OMRON:
+                        {
+
+                            // if plc communications enabled
+                            if (plcCommEnable)
+                            {
+
+                                float lane1Width = 0;
+                                float lane2Width = 0;
+
+                                switch (globalParameter.Lane1Rail)
+                                {
+                                    case "Rail1":
+                                        {
+                                            lane1Width = ocx.Oven.RailWidthSP[0];
+                                        }
+                                        break;
+                                    case "Rail2":
+                                        {
+                                            lane1Width = ocx.Oven.RailWidthSP[1];
+                                        }
+                                        break;
+                                    case "Rail3":
+                                        {
+                                            lane1Width = ocx.Oven.RailWidthSP[2];
+                                        }
+                                        break;
+                                    case "Rail4":
+                                        {
+                                            lane1Width = ocx.Oven.RailWidthSP[3];
+                                        }
+                                        break;
+                                    case "-":
+                                        lane1Width = 0;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                switch (globalParameter.Lane2Rail)
+                                {
+                                    case "Rail1":
+                                        {
+                                            lane2Width = ocx.Oven.RailWidthSP[0];
+                                        }
+                                        break;
+                                    case "Rail2":
+                                        {
+                                            lane2Width = ocx.Oven.RailWidthSP[1];
+                                        }
+                                        break;
+                                    case "Rail3":
+                                        {
+                                            lane2Width = ocx.Oven.RailWidthSP[2];
+                                        }
+                                        break;
+                                    case "Rail4":
+                                        {
+                                            lane2Width = ocx.Oven.RailWidthSP[3];
+                                        }
+                                        break;
+                                    case "-":
+                                        lane2Width = 0;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                if (globalParameter.RailLogging)
+                                {
+                                    DateTime now = DateTime.Now;
+                                    string path = "C:\\Heller Industries\\AISIN Line Comm\\Logs\\Rail_" +
+                                        now.Year.ToString("D4") + now.Month.ToString("D2") + now.Day.ToString("D2") + ".log";
+
+                                    try
+                                    {
+                                        StreamWriter logFile = new StreamWriter(path, true);
+
+                                        logFile.WriteLine(lane1Width.ToString("F1"));
+                                        logFile.WriteLine(lane2Width.ToString("F1"));
+
+                                        logFile.Close();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        HLog.log(HLog.eLog.EXCEPTION, $"DownstreamThread - RailLogging error {ex.Message}");
+                                    }
+                                }
+
+                                if (lane1Width > 0)
+                                {
+                                    FillPLCOutPut(lane1Width, RAIL_WIDTH_ARRAY_NDX);
+                                    LogWrite("Fill rail1 width: " + lane1Width + " to index: " + RAIL_WIDTH_ARRAY_NDX);
+                                }
+
+                                if (lane2Width > 0)
+                                {
+                                    FillPLCOutPut(lane2Width, RAIL_WIDTH_ARRAY_NDX_2);
+                                    LogWrite("Fill rail2 width: " + lane2Width + " to index: " + RAIL_WIDTH_ARRAY_NDX_2);
+                                }
+
+                                try
+                                {
+                                    // lock access to PLC
+                                    plcMutex.WaitOne();
+
+                                    // write PLC
+                                    try
+                                    {
+                                        this.compolet.WriteVariable(globalParameter.DownstreamPLCTag, plcOutputData);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        btnStartComm.Text = "Start Comm";
+                                        plcCommEnable = false;
+                                        MessageBox.Show("Omron CX-Compolet WriteVariable " + globalParameter.DownstreamPLCTag + " exception " + e.Message + " rail1Width=" + lane1Width.ToString());
+                                    }
+
+                                    // unlock access to PLC
+                                    plcMutex.ReleaseMutex();
+                                }
+                                catch (Exception ex)
+                                {
+                                    HLog.log(HLog.eLog.EXCEPTION, $"DownstreamThread - during plcMutex {ex.Message}");
+                                }
+                            }
+                        }
+                        break;
+                    case globalParameter.ePLCType.Mitsubishi:
+                        {
+                            if (DownstreamMxPlc.BConnected)
+                            {
+                                foreach (globalParameter.eLane lane in Enum.GetValues(typeof(globalParameter.eLane)))
+                                {
+                                    WriteRailWidthToPlc(lane);
+                                }
+                            }
+
+                            if (!DownstreamMxPlc.IsOnline())
+                            {
+                                downstreamPlcDisConnectCount++;
+                                if (downstreamPlcDisConnectCount > 5)
+                                {
+                                    MessageBox.Show("Mitsubishi Downstream MX Component disconnected, Please check the PLC connection state");
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                downstreamPlcDisConnectCount = 0;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                // snooze
+                Thread.Sleep(globalParameter.DownstreamPLCPeriod);
+            }
+        }
+
+        private void UpDownstreamThread()
+        {
+            downstreamThread = new Thread(new ThreadStart(DownstreamThread));
+            downstreamThread.Start();
+
+            // start upstream PLC thread
+            upstreamThread = new Thread(new ThreadStart(UpstreamThread));
+            upstreamThread.Start();
+        }
+
+        #endregion
+
+        #region [Local Function]
+
+        private void checkMxPlcConnection()
+        {
+            try
+            {
+                //if (UpstreamMxPlc != null)
+                //   c UpstreamMxPlc.BConnected;
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $" checkMxPlcConnection : { ex.Message}");
+            }
+        }
+
+        private void UpstreamBarcodeOperation(globalParameter.eLane lane)
+        {
+            try
+            {
+                // In case of TCO
+                // Front PC = Lane1 operation. (D0   ~ D11  / D21 )
+                // Rear  PC = Lane1 operation. (D100 ~ D111 / D121)
+
+                // In case of Dual lane
+                // Front Lane = Lane1 operation. (D0   ~ D11  / D21 )
+                // Rear  Lane = Lane2 operation. (D100 ~ D111 / D121)
+
+                switch (lane)
+                {
+                    case globalParameter.eLane.Lane1:
+                        {
+                            if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
+
+                            // test BA signal transition from OFF to ON
+                            if (BASignalLane1 == false && (MxPlcBaSignalLane1 != 0))    // daniel modified,  remove barcode socket check.
+                            {
+                                // copy barcode to tcp message buffer
+                                // Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
+                                LogWrite("Clear barcode array");
+                                Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
+
+                                // Line1 Barcode
+                                lane1BarcodeData = BarcodeDataIntToByte(globalParameter.eEndian.LittleEndian, MxPlcBarcodeDataLane1); // Mitsubishi use Litte endian
+
+                                // deal with this barcode
+                                if (lane1BarcodeData[0] != 0)
+                                {
+                                    barcodeFromUpLane1 = BarcodeByteToString(lane1BarcodeData);
+                                    LogWrite("Acquired barcode for lane1: " + barcodeFromUpLane1);
+                                    UpdatingValues("tbBarcodeLane1", barcodeFromUpLane1);
+                                    ocx.Lane1Barcode = barcodeFromUpLane1.Replace("\0", "");
+                                }
+
+                                // do nothing if hold smema until barcode scan is not enabled.
+                                if (!globalParameter.holdSmemaUntilBarcode)
+                                    return;
+
+                                if (!globalParameter.autoChangeRecipeWidthSpeed)
+                                {
+                                    // change recipe,  width, speed not enabled, release smema when barcode is scanned.
+                                    if (lane1BarcodeData[0] != 0)
+                                    {
+                                        LogWrite("Auto load recipe not enabled, release smema for line1.");
+                                        SmemaLaneHold(0, 0);
+                                    }
+                                    return;
+                                }
+
+                                if (lane1BarcodeData[0] != 0)
+                                {
+                                    LogWrite("Start to check barcode recipe for lane1");
+                                    CheckBarcodeRecipe(0, barcodeFromUpLane1);
+                                }
+
+                                // flag BA signal true
+                                BASignalLane1 = true;
+                            }
+
+                            // test BA signal transition from ON to OFF
+                            if (BASignalLane1 && MxPlcBaSignalLane1 == 0)
+                            {
+                                BASignalLane1 = false;
+                            }
+                        }
+                        break;
+                    case globalParameter.eLane.Lane2:
+                        {
+                            if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
+
+                            // test BA signal transition from OFF to ON
+                            if (BASignalLane2 == false && (MxPlcBaSignalLane2 != 0))    // daniel modified,  remove barcode socket check.
+                            {
+                                // copy barcode to tcp message buffer
+                                // Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
+                                LogWrite("Clear barcode array");
+                                Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
+
+                                // Line1 Barcode
+                                lane2BarcodeData = BarcodeDataIntToByte(globalParameter.eEndian.LittleEndian, MxPlcBarcodeDataLane2); // Mitsubishi use Litte endian
+
+                                // deal with this barcode
+                                if (lane2BarcodeData[0] != 0)
+                                {
+                                    barcodeFromUpLane2 = BarcodeByteToString(lane2BarcodeData);
+                                    LogWrite("Acquired barcode for lane2: " + barcodeFromUpLane2);
+                                    UpdatingValues("tbBarcodeLane2", barcodeFromUpLane2);
+                                    ocx.Lane2Barcode = barcodeFromUpLane2.Replace("\0", "");
+                                }
+
+                                // do nothing if hold smema until barcode scan is not enabled.
+                                if (!globalParameter.holdSmemaUntilBarcode)
+                                    return;
+
+                                if (!globalParameter.autoChangeRecipeWidthSpeed)
+                                {
+                                    // change recipe,  width, speed not enabled, release smema when barcode is scanned.
+                                    if (lane2BarcodeData[0] != 0)
+                                    {
+                                        LogWrite("Auto load recipe not enabled, release smema for line2.");
+                                        SmemaLaneHold(1, 0);
+                                    }
+                                    return;
+                                }
+
+                                if (lane2BarcodeData[0] != 0)
+                                {
+                                    LogWrite("Start to check barcode recipe for lane2");
+                                    CheckBarcodeRecipe(1, barcodeFromUpLane2);
+                                }
+
+                                // flag BA signal true
+                                BASignalLane2 = true;
+                            }
+
+                            // test BA signal transition from ON to OFF
+                            if (BASignalLane2 && MxPlcBaSignalLane2 == 0)
+                            {
+                                BASignalLane2 = false;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpstreamBarcodeOperation - {ex.Message}");
+            }
+        }
+
+        private byte[] BarcodeDataIntToByte(globalParameter.eEndian endian, int[] data)
+        {
+            byte[] laneBarcodeData = new byte[TCP_MSG_MAX];
+            Array.Clear(laneBarcodeData, 0, TCP_MSG_MAX); ;
+            int first = 1;
+            int second = 0;
+            byte barcodeDigit = 0;
+            try
+            {
+                switch (endian)
+                {
+                    case globalParameter.eEndian.BigEndian:
+                        {
+                            first = 1;
+                            second = 0;
+                        }
+                        break;
+                    case globalParameter.eEndian.LittleEndian:
+                        {
+                            first = 0;
+                            second = 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                {
+                    if ((ndx & 1) == first)
+                        barcodeDigit = (byte)(data[ndx / 2] & 0xFF);
+                    else
+                        barcodeDigit = (byte)(data[ndx / 2] >> 8 & 0xFF);
+                    if (barcodeDigit == second)
+                        break;
+                    laneBarcodeData[ndx] = barcodeDigit;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"BarcodeDataConvert - {ex.Message}");
+            }
+
+            return laneBarcodeData;
+        }
+
+        private string BarcodeByteToString(byte[] btBcr)
+        {
+            string strBcr = string.Empty;
+            try
+            {
+                strBcr = System.Text.Encoding.Default.GetString(btBcr);
+                strBcr = Encoding.ASCII.GetString(btBcr, 0, btBcr.Length);
+                int offset = strBcr.IndexOf("\r\n");
+                if (offset < 0)
+                    offset = strBcr.IndexOf('\r');
+                if (offset < 0)
+                    offset = strBcr.IndexOf('\n');
+                if (offset > 0)
+                    strBcr = strBcr.Substring(0, offset);
+                strBcr = strBcr.Trim().Replace(" ", "");
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"BarcodeByteToString - {ex.Message}");
+            }
+
+            return strBcr;
+        }
+
+        private void ReadBarcodeDataFromPLC()
+        {
+
+            try
+            {
+                // In case of TCO
+                // Front PC = Lane1 operation. (D0   ~ D11  / D21 )
+                // Rear  PC = Lane1 operation. (D100 ~ D111 / D121)
+
+                // In case of Dual lane
+                // Front Lane = Lane1 operation. (D0   ~ D11  / D21 )
+                // Rear  Lane = Lane2 operation. (D100 ~ D111 / D121)
+
+                int[] bcrData1 = new int[BARCODE_MAX];
+                int[] bcrData2 = new int[BARCODE_MAX];
+                string addr = string.Empty;
+                int length = BARCODE_MAX;
+
+                foreach (globalParameter.eLane lane in Enum.GetValues(typeof(globalParameter.eLane)))
+                {
+                    switch (lane)
+                    {
+                        case globalParameter.eLane.Lane1:
+                            {
+                                if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
+                                addr = globalParameter.AddrMxBarcodeLane1;
+                                int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out bcrData1[0]);
+                                if (iReturnCode != 0)
+                                {
+                                    throw new Exception("Return code not 0, code: " + iReturnCode);
+                                }
+                                MxPlcBarcodeDataLane1 = bcrData1;
+                            }
+                            break;
+                        case globalParameter.eLane.Lane2:
+                            {
+                                if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
+                                addr = globalParameter.AddrMxBarcodeLane2;
+                                int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out bcrData2[0]);
+                                if (iReturnCode != 0)
+                                {
+                                    throw new Exception("Return code not 0, code: " + iReturnCode);
+                                }
+                                MxPlcBarcodeDataLane2 = bcrData2;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"ReadBarcodeDataFromPLC - {ex.Message}");
+            }
+        }
+
+        private void ReadBoardAvailableFromPLC()
+        {
+            try
+            {
+                int baData = 0;
+                string addr = string.Empty;
+                int length = 1;
+                foreach (globalParameter.eLane lane in Enum.GetValues(typeof(globalParameter.eLane)))
+                {
+                    switch (lane)
+                    {
+                        case globalParameter.eLane.Lane1:
+                            {
+                                if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable) break;
+                                addr = globalParameter.AddrMxBoardAvailableLane1;
+                                int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out baData);
+
+                                if (iReturnCode != 0)
+                                {
+                                    throw new Exception("Return code not 0, code: " + iReturnCode);
+                                }
+
+                                MxPlcBaSignalLane1 = baData;
+                                UpdatingValues("tbBASignalLane1", MxPlcBaSignalLane1.ToString());
+                            }
+                            break;
+                        case globalParameter.eLane.Lane2:
+                            {
+                                if (globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Disable) break;
+                                addr = globalParameter.AddrMxBoardAvailableLane2;
+                                int iReturnCode = UpstreamMxPlc.ReadDeviceBlockInt(addr, length, out baData);
+
+                                if (iReturnCode != 0)
+                                {
+                                    throw new Exception("Return code not 0, code: " + iReturnCode);
+                                }
+
+                                MxPlcBaSignalLane2 = baData;
+                                UpdatingValues("tbBASignalLane2", MxPlcBaSignalLane2.ToString());
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"ReadBoardAvailableFromPLC - {ex.Message}");
+            }
+        }
+
+        private void WriteRailWidthToPlc(globalParameter.eLane lane)
+        {
+            try
+            {
+                float flane1 = 0;
+                float flane2 = 0;
+                int ilane1 = 0;
+                int ilane2 = 0;
+                string addrLane1 = globalParameter.AddrMxRailWidthLane1;
+                string addrLane2 = globalParameter.AddrMxRailWidthLane2;
+
+                switch (lane)
+                {
+                    case globalParameter.eLane.Lane1:
+                        {
+                            switch (globalParameter.Lane1Rail)
+                            {
+                                case "Rail1":
+                                    flane1 = ocx.Oven.RailWidthSP[0];
+                                    break;
+                                case "Rail2":
+                                    flane1 = ocx.Oven.RailWidthSP[1];
+                                    break;
+                                case "Rail3":
+                                    flane1 = ocx.Oven.RailWidthSP[2];
+                                    break;
+                                case "Rail4":
+                                    flane1 = ocx.Oven.RailWidthSP[3];
+                                    break;
+                                case "-":
+                                    return; // No need to write value;
+                                default:
+                                    break;
+                            }
+
+                            if (flane1 > 0)
+                            {
+                                ilane1 = BCDConverter(flane1);
+                                LogWrite("Fill rail1 width: " + flane1);
+                            }
+
+                            int returnCode = DownstreamMxPlc.WriteDeviceBlockInt(addrLane1, 1, ref ilane1);
+
+                            if (returnCode != 0)
+                            {
+                                throw new Exception("Return code is not 0, return code: " + returnCode);
+                            }
+                        }
+                        break;
+                    case globalParameter.eLane.Lane2:
+                        {
+                            switch (globalParameter.Lane2Rail)
+                            {
+                                case "Rail1":
+                                    flane2 = ocx.Oven.RailWidthSP[0];
+                                    break;
+                                case "Rail2":
+                                    flane2 = ocx.Oven.RailWidthSP[1];
+                                    break;
+                                case "Rail3":
+                                    flane2 = ocx.Oven.RailWidthSP[2];
+                                    break;
+                                case "Rail4":
+                                    flane2 = ocx.Oven.RailWidthSP[3];
+                                    break;
+                                case "-":
+                                    return; // No need to write value;
+                                default:
+                                    break;
+                            }
+
+                            if (flane2 > 0)
+                            {
+                                ilane2 = BCDConverter(flane2);
+                                LogWrite("Fill rail1 width: " + flane2);
+                            }
+
+                            int returnCode = DownstreamMxPlc.WriteDeviceBlockInt(addrLane2, 1, ref ilane2);
+
+                            if (returnCode != 0)
+                            {
+                                throw new Exception("Return code is not 0, return code: " + returnCode);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                if (globalParameter.RailLogging)
+                {
+                    DateTime now = DateTime.Now;
+                    string path = "C:\\Heller Industries\\AISIN Line Comm\\Logs\\Rail_" +
+                        now.Year.ToString("D4") + now.Month.ToString("D2") + now.Day.ToString("D2") + ".log";
+
+                    try
+                    {
+                        StreamWriter logFile = new StreamWriter(path, true);
+
+                        logFile.WriteLine(flane1.ToString("F1"));
+                        logFile.WriteLine(flane2.ToString("F1"));
+
+                        logFile.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        HLog.log(HLog.eLog.EXCEPTION, $"DownstreamThread - RailLogging error {ex.Message}");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"WriteRailWidthToPlc - {ex.Message}");
+            }
+        }
+
+        public void UpdatingValues(string item, string value)
+        {
+            if (InvokeRequired) this.Invoke(new MethodInvoker(() => UpdatingValues(item, value)));
+            else
+            {
+                try
+                {
+                    switch (item)
+                    {
+                        case "btnStartComm":
+                            {
+                                btnStartComm.Text = value;
+                            }
+                            break;
+                        case "tbBarcodeLane1":
+                            {
+                                tbBarcodeLane1.Text = value;
+                            }
+                            break;
+                        case "tbBarcodeLane2":
+                            {
+                                tbBarcodeLane2.Text = value;
+                            }
+                            break;
+                        case "tbBASignalLane1":
+                            {
+                                tbBASignalLane1.Text = value;
+                            }
+                            break;
+                        case "tbBASignalLane2":
+                            {
+                                tbBASignalLane2.Text = value;
+                            }
+                            break;
+                        case "tbBarcodeLane1string":
+                            {
+                                tbBarcodeLane1string.Text = value;
+                            }
+                            break;
+                        case "tbBarcodeLane2string":
+                            {
+                                tbBarcodeLane2string.Text = value;
+                            }
+                            break;
+
+                        case "radioButtonRail1":
+                            break;
+                        case "radioButtonRail2":
+                            break;
+                        case "radioButtonRail3":
+                            break;
+                        case "radioButtonRail4":
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    HLog.log(HLog.eLog.EXCEPTION, $"UpdatingValues - {ex.Message}");
+                }
+            }
+        }
+
+        public void UpdatingValuesOcx()
+        {
+            if (InvokeRequired) this.Invoke(new MethodInvoker(() => UpdatingValuesOcx()));
+            else
+            {
+                try
+                {
+                    tbRail1WidthSP.Text = ocx.Oven.RailWidthSP[0].ToString();
+                    tbRail2WidthSP.Text = ocx.Oven.RailWidthSP[1].ToString();
+                    tbRail3WidthSP.Text = ocx.Oven.RailWidthSP[2].ToString();
+                    tbRail4WidthSP.Text = ocx.Oven.RailWidthSP[3].ToString();
+
+                    tbRail1WidthPV.Text = ocx.Oven.RailWidthPV[0].ToString();
+                    tbRail2WidthPV.Text = ocx.Oven.RailWidthPV[1].ToString();
+                    tbRail3WidthPV.Text = ocx.Oven.RailWidthPV[2].ToString();
+                    tbRail4WidthPV.Text = ocx.Oven.RailWidthPV[3].ToString();
+
+                    tbBelt1Processed.Text = ocx.Oven.ProcessedCount[0].ToString();
+                    tbBelt2Processed.Text = ocx.Oven.ProcessedCount[1].ToString();
+                    tbBelt3Processed.Text = ocx.Oven.ProcessedCount[2].ToString();
+                    tbBelt4Processed.Text = ocx.Oven.ProcessedCount[3].ToString();
+
+                    tbBelt1InOven.Text = ocx.Oven.InOvenCount[0].ToString();
+                    tbBelt2InOven.Text = ocx.Oven.InOvenCount[1].ToString();
+                    tbBelt3InOven.Text = ocx.Oven.InOvenCount[2].ToString();
+                    tbBelt4InOven.Text = ocx.Oven.InOvenCount[3].ToString();
+
+                    tbLightTowerColor.Text = ocx.Oven.LighTower;
+                }
+                catch (Exception ex)
+                {
+                    HLog.log(HLog.eLog.EXCEPTION, $"UpdatingValues - {ex.Message}");
+                }
+            }
+        }
+
+        public void FillPLCOutPut(float railWidth, int railWidthIndex)
+        {
+            // compute rail width in tenths of millimeter
+            ushort temp = (ushort)((railWidth + 0.05) * 10);
+
+            // break down into BCD digits
+            ushort digit1 = (ushort)(temp / 1000);
+            temp %= 1000;
+            ushort digit2 = (ushort)(temp / 100);
+            temp %= 100;
+            ushort digit3 = (ushort)(temp / 10);
+            ushort digit4 = (ushort)(temp % 10);
+
+            switch (globalParameter.PLCType)
+            {
+                case globalParameter.ePLCType.None:
+                    break;
+                case globalParameter.ePLCType.OMRON:
+                    {
+                        // store rail width in BCD
+                        // Big endian
+                        plcOutputData[railWidthIndex] = digit1 << 12 | digit2 << 8 | digit3 << 4 | digit4;
+                    }
+                    break;
+                case globalParameter.ePLCType.Mitsubishi:
+                    {
+                        // store rail width in BCD
+                        // Little endian
+                        plcOutputData[railWidthIndex] = digit1 << 12 | digit2 << 8 | digit3 << 4 | digit4;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        private int BCDConverter(float railWidth)
+        {
+            int result = 0;
+            // compute rail width in tenths of millimeter
+            ushort temp = (ushort)((railWidth + 0.05) * 10);
+
+            // break down into BCD digits
+            ushort digit1 = (ushort)(temp / 1000);
+            temp %= 1000;
+            ushort digit2 = (ushort)(temp / 100);
+            temp %= 100;
+            ushort digit3 = (ushort)(temp / 10);
+            ushort digit4 = (ushort)(temp % 10);
+
+            // store rail width in BCD
+            result = digit1 << 12 | digit2 << 8 | digit3 << 4 | digit4;
+            return result;
+
+        }
+
+        private void UpdateBarcodeString()
+        {
+            try
+            {
                 // update barcode data
-                String barcodeTextLane1 = "";
-                String barcodeTextLane2 = "";
+                string barcodeTextLane1 = "";
+                string barcodeTextLane2 = "";
+
                 Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
                 Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
-                
+
                 for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
                 {
                     byte barcodeDigit;
@@ -851,16 +1501,6 @@ namespace AISIN_WFA
                             break;
                     }
                 }
-
-                //for (int ndx = 100; ndx < BARCODE_MAX; ndx++)
-                //{
-                //    byte barcodeDigit;
-                //    if ((ndx & 1) == 1)
-                //        barcodeDigit = (byte)(plcInputData[ndx / 2] & 0xFF);
-                //    else
-                //        barcodeDigit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
-                //    barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
-                //}
 
                 int startIndex = 100;
                 for (int ndx = startIndex; ndx < startIndex + BARCODE_MAX; ndx++)
@@ -902,367 +1542,73 @@ namespace AISIN_WFA
                     }
                 }
 
-                tbBarcodeLane1.Text = barcodeTextLane1;
-                tbBarcodeLane2.Text = barcodeTextLane2;
-
-                tbBarcodeLane1string.Text = GetBarcodeString(lane1BarcodeByte);
-                tbBarcodeLane2string.Text = GetBarcodeString(lane2BarcodeByte);
-
-                // update BA signal data for lane 1
-                tbBASignalLane1.Text = plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1].ToString();
-                // update BA signal data for lane 2
-                tbBASignalLane2.Text = plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2].ToString();
-
-                // snooze
-                Thread.Sleep(updatePeriod);
+                UpdatingValues("tbBarcodeLane1", barcodeTextLane1);
+                UpdatingValues("tbBarcodeLane2", barcodeTextLane2);
+                UpdatingValues("tbBarcodeLane1string", GetBarcodeString(lane1BarcodeByte));
+                UpdatingValues("tbBarcodeLane2string", GetBarcodeString(lane2BarcodeByte));
+                UpdatingValues("tbBASignalLane1", plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1].ToString());
+                UpdatingValues("tbBASignalLane2", plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2].ToString());
 
             }
-        }
-
-        private string WildCardToRegular(string value)
-        {
-            return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
-        }
-
-        //---------------------------------------------------------------------
-        // Method UpstreamThread
-        //---------------------------------------------------------------------
-        private void UpstreamThread()
-        {
-            //while (true)
-            while (RunFlag)
+            catch (Exception ex)
             {
-                // if plc communications enabled
-                if (plcCommEnable)
+                HLog.log(HLog.eLog.EXCEPTION, $"UpdateBarcodeString - {ex.Message}");
+            }
+        }
+        private void UpdateBarcodeMxString()
+        {
+            try
+            {
+                // update barcode data
+                string barcodeTextLane1 = "";
+                string barcodeTextLane2 = "";
+
+                Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
+                Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
+
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
                 {
-                    // lock access to PLC
-                    plcMutex.WaitOne();
-                    // 25-Sep-22 MSL v1.19
-#if true
-                    switch (globalParameter.PLCType)
-                    {
-                        case globalParameter.ePLCType.None:
-                            break;
-                        case globalParameter.ePLCType.OMRON:
-                            {
-                                try
-                                {
-                                    plcInputData = (Int32[])this.compolet.ReadVariable(tbUpstreamPLCTag.Text);
-                                }
-                                catch (Exception e)
-                                {
-                                    this.compolet.PeerAddress = (String)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader", "TagIP", "192.168.241.2");
-
-                                    // give him another retry
-                                    if (plcCommEnable)
-                                    {
-                                        plcCommEnable = false;
-                                        continue;
-                                    }
-                                    btnStartComm.Text = "Start Comm";
-
-                                    MessageBox.Show("Omron CX-Compolet ReadVariable " + tbUpstreamPLCTag.Text + " exception " + e.Message);
-                                }
-                            }
-                            break;
-                        case globalParameter.ePLCType.Mitsubishi:
-                            {
-                                try
-                                {
-                                    string name = tbUpstreamPLCTag.Text;
-                                    int length = PLC_MEMORY_MAX;
-                                    int[] tempplc = new int[PLC_MEMORY_MAX];
-                                    //int iReturnCode = dotUtlType1.ReadDeviceBlock(ref name, length, ref tempplc);
-                                    int iReturnCode = actUtlType.ReadDeviceBlock("D0", length, out tempplc[0]);
-
-
-                                    if (iReturnCode != 0)
-                                    {
-                                        throw new Exception("Return code not 0, code: " + iReturnCode);
-                                    }
-
-                                    plcInputData = tempplc;
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show("Mitsubishi MX Component ReadVariable " + tbUpstreamPLCTag.Text + " exception " + ex.Message);
-                                }
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-#else
-                    if (globalParameter.PLCType == "OMRON")
-                    {
-                        // read PLC
-                        try
-                        {
-                            plcInputData = (Int32[])this.compolet.ReadVariable(tbUpstreamPLCTag.Text);
-                        }
-                        catch (Exception e)
-                        {
-                            this.compolet.PeerAddress = (String)Registry.GetValue("HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader", "TagIP", "192.168.241.2");
-
-                            // give him another retry
-                            if (plcCommEnable)
-                            {
-                                plcCommEnable = false;
-                                continue;
-                            }
-                            btnStartComm.Text = "Start Comm";
-
-                            MessageBox.Show("Omron CX-Compolet ReadVariable " + tbUpstreamPLCTag.Text + " exception " + e.Message);
-                        }
-                    }
-                    else if (globalParameter.PLCType == "Mitsubishi")
-                    {
-                        try
-                        {
-                            string name = tbUpstreamPLCTag.Text;
-                            int length = 200;
-                            int iReturnCode = dotUtlType1.ReadDeviceBlock(ref name, length, ref plcInputData);
-                            if (iReturnCode != 0)
-                            {
-                                throw new Exception("Return code not 0, code: " + iReturnCode);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Mitsubishi CX-Compolet ReadVariable " + tbUpstreamPLCTag.Text + " exception " + ex.Message);
-                        }
-                    }
-#endif
-
-                    //LogWrite("PLC input length: " + plcInputData.Length);
-
-                    // unlock access to PLC
-                    plcMutex.ReleaseMutex();
-                    try
-                    {
-                        // test BA signal transition from OFF to ON
-                        if (BASignal == false &&
-                            (plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1] != 0 || plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2] != 0))    // daniel modified,  remove barcode socket check.
-                        {
-                            //// copy barcode to tcp message buffer
-                            //Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
-                            LogWrite("Clear barcode array");
-                            Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
-                            Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
-
-                            // Line1 Barcode
-                            for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
-                            {
-                                byte barcode1Digit;
-                                switch (globalParameter.PLCType)
-                                {
-                                    case globalParameter.ePLCType.None:
-                                        break;
-                                    case globalParameter.ePLCType.OMRON:
-                                        {
-                                            // Big endian
-                                            if ((ndx & 1) == 1)
-                                                barcode1Digit = (byte)(plcInputData[ndx / 2] & 0xFF);
-                                            else
-                                                barcode1Digit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
-                                            if (barcode1Digit == 0)
-                                                break;
-                                            lane1BarcodeData[ndx] = barcode1Digit;
-                                        }
-                                        break;
-                                    case globalParameter.ePLCType.Mitsubishi:
-                                        {
-                                            // Little endian
-                                            if ((ndx & 1) == 0)
-                                                barcode1Digit = (byte)(plcInputData[ndx / 2] & 0xFF);
-                                            else
-                                                barcode1Digit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
-                                            if (barcode1Digit == 1)
-                                                break;
-                                            lane1BarcodeData[ndx] = barcode1Digit;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-
-                            // Lane#1 Barcode - Note: Seems to be not allow barcode Id for Lane#1
-                            //                        Max PLC Address 125
-                            //if (plcInputData.Length > 124)
-                            //{
-
-                           int startIndex = 100;
-                           byte barcode2Digit;
-
-                            for (int ndx = startIndex; ndx < startIndex + BARCODE_MAX; ndx++)
-                            {
-                                switch (globalParameter.PLCType)
-                                {
-                                    case globalParameter.ePLCType.None:
-                                        break;
-                                    case globalParameter.ePLCType.OMRON:
-                                        {
-                                            // Big endian
-                                            if ((ndx & 1) == 1)
-                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] & 0xFF);
-                                            else
-                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] >> 8 & 0xFF);
-                                            if (barcode2Digit == 0)
-                                                break;
-                                            lane2BarcodeData[ndx - startIndex] = barcode2Digit;
-                                        }
-                                        break;
-                                    case globalParameter.ePLCType.Mitsubishi:
-                                        {
-                                            // Little endian
-                                            if ((ndx & 1) == 0)
-                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] & 0xFF);
-                                            else
-                                                barcode2Digit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] >> 8 & 0xFF);
-                                            if (barcode2Digit == 1)
-                                                break;
-                                            lane2BarcodeData[ndx - startIndex] = barcode2Digit;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-
-                            }
-                            //}
-
-                            // deal with this barcode
-                            if (lane1BarcodeData[0] != 0)
-                            {
-                                barcodeFromUpLane1 = System.Text.Encoding.Default.GetString(lane1BarcodeData);
-                                barcodeFromUpLane1 = Encoding.ASCII.GetString(lane1BarcodeData, 0, lane1BarcodeData.Length);
-                                int offset = barcodeFromUpLane1.IndexOf("\r\n");
-                                if (offset < 0)
-                                    offset = barcodeFromUpLane1.IndexOf('\r');
-                                if (offset < 0)
-                                    offset = barcodeFromUpLane1.IndexOf('\n');
-                                if (offset > 0)
-                                    barcodeFromUpLane1 = barcodeFromUpLane1.Substring(0, offset);
-
-                                // 1.07 revision,  trim barcode before using it for changing recipe or speed or length.
-                                barcodeFromUpLane1 = barcodeFromUpLane1.Trim().Replace(" ", "");
-                                LogWrite("Acquired barcode for lane1: " + barcodeFromUpLane1);
-                                tbBarcodeLane1.Text = barcodeFromUpLane1;
-                            }
-
-                            if (lane2BarcodeData[0] != 0)
-                            {
-                                barcodeFromUpLane2 = System.Text.Encoding.Default.GetString(lane2BarcodeData);
-                                barcodeFromUpLane2 = Encoding.ASCII.GetString(lane2BarcodeData, 0, lane2BarcodeData.Length);
-                                int offset = barcodeFromUpLane2.IndexOf("\r\n");
-                                if (offset < 0)
-                                    offset = barcodeFromUpLane2.IndexOf('\r');
-                                if (offset < 0)
-                                    offset = barcodeFromUpLane2.IndexOf('\n');
-                                if (offset > 0)
-                                    barcodeFromUpLane2 = barcodeFromUpLane2.Substring(0, offset);
-
-                                barcodeFromUpLane2 = barcodeFromUpLane2.Trim().Replace(" ", "");
-                                LogWrite("Acquired barcode for lane2: " + barcodeFromUpLane2);
-                                tbBarcodeLane2.Text = barcodeFromUpLane2;
-                            }
-
-                            // do nothing if hold smema until barcode scan is not enabled.
-                            if (!globalParameter.holdSmemaUntilBarcode)
-                                continue;
-
-                            if (!globalParameter.autoChangeRecipeWidthSpeed)
-                            {
-                                // change recipe,  width, speed not enabled, release smema when barcode is scanned.
-                                if (lane1BarcodeData[0] != 0)
-                                {
-                                    LogWrite("Auto load recipe not enabled, release smema for l.");
-                                    SmemaLaneHold(0, 0);
-                                }
-                                if (lane2BarcodeData[0] != 0)
-                                {
-                                    LogWrite("Auto load recipe not enabled, release smema for 2.");
-                                    SmemaLaneHold(1, 0);
-                                }
-                                continue;
-                            }
-
-                            if (lane1BarcodeData[0] != 0)
-                            {
-                                LogWrite("Start to check barcode recipe for lane1");
-                                CheckBarcodeRecipe(0, barcodeFromUpLane1);
-                            }
-
-                            if (lane2BarcodeData[0] != 0)
-                            {
-                                LogWrite("Start to check barcode recipe for lane2");
-                                CheckBarcodeRecipe(1, barcodeFromUpLane2);
-                            }
-
-                            // flag BA signal true
-                            BASignal = true;
-                        }
-
-                        // test BA signal transition from ON to OFF
-                        if (BASignal &&
-                            plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1] == 0
-                            && plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2] == 0)
-                        {
-                            BASignal = false;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogWrite(ex.Message);
-                    }
+                    byte barcodeDigit;
+                    // Little endian
+                    if ((ndx & 1) == 0)
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane1[ndx / 2] & 0xFF);
+                    else
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane1[ndx / 2] >> 8 & 0xFF);
+                    barcodeTextLane1 += barcodeDigit.ToString("X2") + " ";
+                    lane1BarcodeByte[ndx] = barcodeDigit;
                 }
 
-                //// fjn -- debug
-                //if (false && barcodeSocketConnected)
-                //{
-                //    Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
-                //    tcpMsgData[0] = (byte)'A';
-                //    tcpMsgData[1] = (byte)'B';
-                //    tcpMsgData[2] = (byte)'C';
-                //    tcpMsgData[3] = (byte)'D';
-                //    tcpMsgData[4] = (byte)'E';
-                //    tcpMsgData[5] = (byte)'F';
-                //    tcpMsgData[6] = (byte)'G';
-                //    tcpMsgData[7] = (byte)'H';
-                //    tcpMsgData[8] = (byte)'I';
-                //    tcpMsgData[9] = (byte)'J';
-                //    tcpMsgData[10] = (byte)'K';
-                //    tcpMsgData[11] = (byte)'L';
-                //    tcpMsgData[12] = (byte)'M';
-                //    tcpMsgData[13] = (byte)'N';
-                //    tcpMsgData[14] = (byte)'O';
-                //    tcpMsgData[15] = (byte)'P';
-                //    tcpMsgData[16] = (byte)'Q';
-                //    tcpMsgData[17] = (byte)'R';
-                //    tcpMsgData[18] = (byte)'S';
-                //    tcpMsgData[19] = (byte)'T';
-                //    tcpMsgData[20] = (byte)'U';
-                //    tcpMsgData[21] = (byte)'V';
-                //    tcpMsgData[22] = (byte)'W';
-                //    tcpMsgData[23] = (byte)'X';
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                {
+                    byte barcodeDigit;
+                    // Little endian
+                    if ((ndx & 1) == 0)
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane2[ndx / 2] & 0xFF);
+                    else
+                        barcodeDigit = (byte)(MxPlcBarcodeDataLane2[ndx / 2] >> 8 & 0xFF);
+                    //if (barcodeDigit == 0)
+                    //    break;
+                    barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
+                    lane2BarcodeByte[ndx] = barcodeDigit;
+                }
 
-                //    try
-                //    {
-                //        barcodeSocket.Send(tcpMsgData, TCP_MSG_MAX, 0);
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        barcodeSocket.Close();
-                //        btnConnect.Text = "Connect";
-                //        barcodeSocketConnected = false;
-                //    }
-                //}
+                UpdatingValues("tbBarcodeLane1", barcodeTextLane1);
+                UpdatingValues("tbBarcodeLane2", barcodeTextLane2);
+                UpdatingValues("tbBarcodeLane1string", GetBarcodeString(lane1BarcodeByte));
+                UpdatingValues("tbBarcodeLane2string", GetBarcodeString(lane2BarcodeByte));
+                UpdatingValues("tbBASignalLane1", MxPlcBaSignalLane1.ToString());
+                UpdatingValues("tbBASignalLane2", MxPlcBaSignalLane2.ToString());
 
-                // snooze
-                Thread.Sleep(upstreamPLCPeriod);
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpdateBarcodeString - {ex.Message}");
             }
         }
+        #endregion
+
+        #region [Barcode Function]
+
 
         private string GetBarcodeString(byte[] barcodeByte)
         {
@@ -1519,7 +1865,7 @@ namespace AISIN_WFA
             while (true)
             {
                 int boardCount = 0;
-                for (int i=0; i < 2; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     boardCount += GetBoardsCountInOven(i);
                 }
@@ -1548,56 +1894,6 @@ namespace AISIN_WFA
             }
             // waitForOvenEmptyToLoadRecipe = null; // v1.19
             bWaitForOvenEmptytoLoadRecipe = false;
-        }
-
-        private void LoadRecipe(string recipeName)
-        {
-            ocxMutex.WaitOne();
-            recipeName = "c:\\oven\\recipe files\\" + recipeName + ".job";
-            int iResult = obj.LoadRecipe(ref recipeName);
-            ocxMutex.ReleaseMutex();
-            LogWrite("Loading recipe: " + recipeName + " Result=" + iResult.ToString());
-            nextRecipeToLoad = null;
-        }
-
-        private int GetBoardsCountInOven(int lane)
-        {
-            ocxMutex.WaitOne();
-            float fResult = obj.GetChannel((short)(46 + lane));
-            ocxMutex.ReleaseMutex();
-            return (int)fResult;
-        }
-
-        private int GetBeltCount()
-        {
-            int beltCount = 0;
-            for (int i = 0; i < 2; i++)
-            {
-                if (GetBeltSpeedValue(i) != -1)
-                    beltCount++;
-            }
-            return beltCount;
-        }
-
-        private bool CheckCBSExist(int lane)
-        {
-            ocxMutex.WaitOne();
-            float fResult = 0;
-            switch (lane)
-            {
-                case 0:
-                    fResult = obj.GetChannel(37);
-                    break;
-                case 1:
-                    fResult = obj.GetChannel(52);
-                    break;
-                default:
-                    fResult = -1;
-                    break;
-            }
-            ocxMutex.ReleaseMutex();
-            bool exist = (fResult == 0 || fResult == -1) ? false : true;
-            return exist;
         }
 
         private void ChangeRecipe(int lane, string recipe, float targetWidth, float targetSpeed)
@@ -1652,6 +1948,79 @@ namespace AISIN_WFA
             }
         }
 
+        private string WildCardToRegular(string value)
+        {
+            return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
+        }
+
+        #endregion
+
+        #region [Ocx Function]
+
+        private bool CheckCBSExist(int lane)
+        {
+            //ocxMutex.WaitOne();
+            float fResult = 0;
+            switch (lane)
+            {
+                case 0:
+                    {
+                        fResult = ocx.GetChannel(37);
+                        //fResult = obj.GetChannel(37);
+                    }
+                    break;
+                case 1:
+                    {
+                        fResult = ocx.GetChannel(52);
+                        //fResult = obj.GetChannel(52);
+                    }
+                    break;
+                default:
+                    fResult = -1;
+                    break;
+            }
+            //ocxMutex.ReleaseMutex();
+            bool exist = (fResult == 0 || fResult == -1) ? false : true;
+            return exist;
+        }
+
+        private void LoadRecipe(string recipeName)
+        {
+#if true
+            recipeName = "c:\\oven\\recipe files\\" + recipeName + ".job";
+            int iResult = ocx.LoadRecipe(recipeName);
+            LogWrite("Loading recipe: " + recipeName + " Result=" + iResult.ToString());
+            nextRecipeToLoad = null;
+#else
+            ocxMutex.WaitOne();
+            recipeName = "c:\\oven\\recipe files\\" + recipeName + ".job";
+            int iResult = obj.LoadRecipe(ref recipeName);
+            ocxMutex.ReleaseMutex();
+            LogWrite("Loading recipe: " + recipeName + " Result=" + iResult.ToString());
+            nextRecipeToLoad = null;
+#endif
+        }
+
+        private int GetBoardsCountInOven(int lane)
+        {
+            float fResult = ocx.GetChannel((short)(46 + lane));
+            //ocxMutex.WaitOne();
+            //float fResult = obj.GetChannel((short)(46 + lane));
+            //ocxMutex.ReleaseMutex();
+            return (int)fResult;
+        }
+
+        private int GetBeltCount()
+        {
+            int beltCount = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                if (GetBeltSpeedValue(i) != -1)
+                    beltCount++;
+            }
+            return beltCount;
+        }
+
         /// <summary>
         /// Set smema to hold or release state
         /// </summary>
@@ -1659,290 +2028,22 @@ namespace AISIN_WFA
         /// <param name="hold">0 means hold, 1 means release</param>
         private void SmemaLaneHold(int lane, int hold)
         {
-            ocxMutex.WaitOne();
-            obj.SMEMA_SetLaneHold((uint)lane, hold);
-            ocxMutex.ReleaseMutex();
-        }
-
-        //---------------------------------------------------------------------
-        // Method DownstreamThread
-        //---------------------------------------------------------------------
-        private void DownstreamThread()
-        {
-            //while (true)
-            while (RunFlag)
-            {
-                // if plc communications enabled
-                if (plcCommEnable)
-                {
-
-                    // daniel comment out in 1.15 version
-#if false
-                    float railWidth = -1;
-                    if (radioButtonRail1.Checked)
-                        railWidth = rail1Width;
-                    else if (radioButtonRail2.Checked)
-                        railWidth = rail2Width;
-                    else if (radioButtonRail3.Checked)
-                        railWidth = rail3Width;
-                    else if (radioButtonRail4.Checked)
-                        railWidth = rail4Width;
-#endif
-
-                    float lane1Width = 0;
-                    float lane2Width = 0;
-
-                    switch (globalParameter.Lane1EHC)
-                    {
-                        case globalParameter.eRails.Rail1:
-                            {
-                                lane1Width = rail1Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail2:
-                            {
-                                lane1Width = rail2Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail3:
-                            {
-                                lane1Width = rail3Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail4:
-                            {
-                                lane1Width = rail4Width;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                    switch (globalParameter.Lane2EHC)
-                    {
-                        case globalParameter.eRails.Rail1:
-                            {
-                                lane2Width = rail1Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail2:
-                            {
-                                lane2Width = rail2Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail3:
-                            {
-                                lane2Width = rail3Width;
-                            }
-                            break;
-                        case globalParameter.eRails.Rail4:
-                            {
-                                lane2Width = rail4Width;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (railLogging)
-                    {
-                        DateTime now = DateTime.Now;
-#if true
-                        string path = "C:\\Heller Industries\\AISIN Line Comm\\Logs\\Rail_" +
-                            now.Year.ToString("D4") + now.Month.ToString("D2") + now.Day.ToString("D2") + ".log";
-#else
-                        string path = "C:\\Heller Industries\\AISIN Line Comm\\BarcodeReader\\Logs\\Rail_" +
-                            now.Year.ToString("D4") + now.Month.ToString("D2") + now.Day.ToString("D2") + ".log";
-#endif
-                        try
-                        {
-                            StreamWriter logFile = new StreamWriter(path, true);
-
-#if true
-                            logFile.WriteLine(lane1Width.ToString("F1"));
-                            logFile.WriteLine(lane2Width.ToString("F1"));
-#else
-                            logFile.WriteLine(rail1Width.ToString("F1"));
-                            logFile.WriteLine(rail2Width.ToString("F2"));
-#endif
-
-                            logFile.Close();
-                        }
-                        catch (Exception e)
-                        {
-                            // don't care
-                        }
-                    }
-
-                    if (lane1Width > 0)
-                    {
-                        FillPLCOutPut(lane1Width, RAIL_WIDTH_ARRAY_NDX);
-                        LogWrite("Fill rail1 width: " + lane1Width + " to index: " + RAIL_WIDTH_ARRAY_NDX);
-                    }
-
-                    if (lane2Width > 0)
-                    {
-                        FillPLCOutPut(lane2Width, RAIL_WIDTH_ARRAY_NDX_2);
-                        LogWrite("Fill rail2 width: " + lane2Width + " to index: " + RAIL_WIDTH_ARRAY_NDX_2);
-                    }
-
-                    // if rail width known
-                    //if (rail1Width > 0)
-                    //{
-                    //    FillPLCOutPut(rail1Width, RAIL_WIDTH_ARRAY_NDX);
-                    //    LogWrite("Fill rail1 width: " + rail1Width + " to index: " + RAIL_WIDTH_ARRAY_NDX);
-                    //}
-
-                    //// if rail width known
-                    //if (rail2Width > 0)
-                    //{
-                    //    FillPLCOutPut(rail2Width, RAIL_WIDTH_ARRAY_NDX_2);
-                    //    LogWrite("Fill rail2 width: " + rail2Width + " to index: " + RAIL_WIDTH_ARRAY_NDX_2);
-                    //}
-
-                    // lock access to PLC
-                    plcMutex.WaitOne();
-
-                    // 25-Sep-22 MSL v1.19
-#if true
-                    switch (globalParameter.PLCType)
-                    {
-                        case globalParameter.ePLCType.None:
-                            break;
-                        case globalParameter.ePLCType.OMRON:
-                            {
-                                // write PLC
-                                try
-                                {
-                                    this.compolet.WriteVariable(tbDownstreamPLCTag.Text, plcOutputData);
-                                }
-                                catch (Exception e)
-                                {
-                                    btnStartComm.Text = "Start Comm";
-                                    plcCommEnable = false;
-                                    MessageBox.Show("Omron CX-Compolet WriteVariable " + tbDownstreamPLCTag.Text + " exception " + e.Message + " rail1Width=" + rail1Width.ToString());
-                                }
-                            }
-                            break;
-                        case globalParameter.ePLCType.Mitsubishi:
-                            {
-                                try
-                                {
-                                    // TODO : MSL - Disable FatalExecutionEngineError in temporary
-                                    string name = tbDownstreamPLCTag.Text;
-                                    int length = PLC_MEMORY_MAX;
-                                    int[] tempPLC = plcOutputData;
-
-                                    //int returnCode = dotUtlType1.WriteDeviceBlock(ref name, length, tempPLC);
-                                    string strCPUType = string.Empty;
-                                    int intCPUType = 0;
-
-                                    int returnCode = actUtlType.WriteDeviceBlock("D250", length, ref tempPLC[0]);
-
-                                    if (returnCode != 0)
-                                    {
-                                        throw new Exception("Return code is not 0, return code: " + returnCode);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    btnStartComm.Text = "Start Comm";
-                                    plcCommEnable = false;
-                                    MessageBox.Show("Mitsubishi MX Component WriteVariable " + tbDownstreamPLCTag.Text + " exception " + ex.Message + " rail1Width=" + rail1Width.ToString());
-                                }
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-#else
-                    if (globalParameter.PLCType == "Mitsubishi")
-                    {
-                        try
-                        {
-                            string name = tbDownstreamPLCTag.Text;
-                            int length = PLC_MEMORY_MAX;
-                            int returnCode = dotUtlType1.WriteDeviceBlock(ref name, length, plcOutputData);
-                            if (returnCode != 0)
-                            {
-                                throw new Exception("Return code is not 0, return code: " + returnCode);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            btnStartComm.Text = "Start Comm";
-                            plcCommEnable = false;
-                            MessageBox.Show("Mitsubishi CX-Compolet WriteVariable " + tbDownstreamPLCTag.Text + " exception " + ex.Message + " rail1Width=" + rail1Width.ToString());
-                        }
-                    }
-                    else if (globalParameter.PLCType == "OMRON")
-                    {
-                        // write PLC
-                        try
-                        {
-                            this.compolet.WriteVariable(tbDownstreamPLCTag.Text, plcOutputData);
-                        }
-                        catch (Exception e)
-                        {
-                            btnStartComm.Text = "Start Comm";
-                            plcCommEnable = false;
-                            MessageBox.Show("Omron CX-Compolet WriteVariable " + tbDownstreamPLCTag.Text + " exception " + e.Message + " rail1Width=" + rail1Width.ToString());
-                        }
-                    }
-#endif
-                    // unlock access to PLC
-                    plcMutex.ReleaseMutex();
-                }
-
-                // snooze
-                Thread.Sleep(downstreamPLCPeriod);
-            }
-        }
-
-        public void FillPLCOutPut(float railWidth, int railWidthIndex)
-        {
-            // compute rail width in tenths of millimeter
-            ushort temp = (ushort)((railWidth + 0.05) * 10);
-
-            // break down into BCD digits
-            ushort digit1 = (ushort)(temp / 1000);
-            temp %= 1000;
-            ushort digit2 = (ushort)(temp / 100);
-            temp %= 100;
-            ushort digit3 = (ushort)(temp / 10);
-            ushort digit4 = (ushort)(temp % 10);
-
-#if true
-
-            switch (globalParameter.PLCType)
-            {
-                case globalParameter.ePLCType.None:
-                    break;
-                case globalParameter.ePLCType.OMRON:
-                    {
-                        // store rail width in BCD
-                        // Big endian
-                        plcOutputData[railWidthIndex] = digit1 << 12 | digit2 << 8 | digit3 << 4 | digit4;
-                    }
-                    break;
-                case globalParameter.ePLCType.Mitsubishi:
-                    {
-                        // store rail width in BCD
-                        // Little endian
-                        plcOutputData[railWidthIndex] = digit2 << 12 | digit1 << 8 | digit4 << 4 | digit3;
-                    }
-                    break;
-                default:
-                    break;
-            }
-#else
-            plcOutputData[railWidthIndex] = digit1 << 12 | digit2 << 8 | digit3 << 4 | digit4;
-#endif
-
+            ocx.SetSmema(lane, hold);
+            //ocxMutex.WaitOne();
+            //obj.SMEMA_SetLaneHold((uint)lane, hold);
+            //ocxMutex.ReleaseMutex();
         }
 
         public string GetCurrentRecipeName()
         {
+#if true
+            string sResult = ocx.GetRecipePath();
+            int offset = sResult.LastIndexOf('\\');
+            if (offset >= 0)
+                sResult = sResult.Substring(offset + 1);
+            LogWrite("Current recipe name=" + sResult);
+            return sResult;
+#else
             string outPtr = null;
             ocxMutex.WaitOne();
             int iResult = obj.GetRecipePath(ref outPtr);
@@ -1953,10 +2054,15 @@ namespace AISIN_WFA
                 sResult = sResult.Substring(offset + 1);
             LogWrite("Current recipe name=" + sResult);
             return sResult;
+#endif
         }
 
         public float GetRailSetPoint(int lane)
         {
+#if true
+            float fResult = ocx.GetRailWidth((short)(lane + 101));
+            return fResult;
+#else
             ocxMutex.WaitOne();
             Object objTmp = obj.GetRailWidth((short)(lane + 101));
             ocxMutex.ReleaseMutex();
@@ -1967,10 +2073,15 @@ namespace AISIN_WFA
             float fResult = (float)objTmp;
             //LogWrite("Get rail width SP: " + fResult.ToString() + " on lane" + lane.ToString());
             return fResult;
+#endif
         }
 
         public float GetRailValue(int lane)
         {
+#if true
+            float fResult = ocx.GetRailWidth((short)(lane + 1));
+            return fResult;
+#else
             ocxMutex.WaitOne();
             Object tempObj = obj.GetRailWidth((short)(lane + 1));
             ocxMutex.ReleaseMutex();
@@ -1981,10 +2092,17 @@ namespace AISIN_WFA
             float fResult = (float)tempObj;
             //LogWrite("Get rail width PV: " + fResult.ToString() + " on lane" + lane.ToString());
             return fResult;
+#endif
         }
 
         public float GetBeltSpeedSetPoint(int lane)
         {
+#if true
+            int iResult = ocx.GetFurnaceBeltSetPoint((short)(lane + 1));
+            float fResult = iResult / 10.0F;
+            LogWrite("Get belt speed SP: " + fResult.ToString() + " on lane" + lane.ToString());
+            return fResult;
+#else
             ocxMutex.WaitOne();
             Object tmpObj = obj.GetFurnaceBeltSetPoint((short)(lane + 1));
             ocxMutex.ReleaseMutex();
@@ -1996,10 +2114,22 @@ namespace AISIN_WFA
             float fResult = iResult / 10.0F;
             LogWrite("Get belt speed SP: " + fResult.ToString() + " on lane" + lane.ToString());
             return fResult;
+#endif
         }
 
         public float GetBeltSpeedValue(int lane)
         {
+#if true
+
+            object tmpObj = ocx.GetFurnaceBeltSpeed(lane + 1);
+            if (tmpObj == null)
+                return -1;
+
+            int iResult = (int)tmpObj;
+            float fResult = iResult / 100.0F;
+            LogWrite("Get belt speed PV: " + fResult.ToString() + " on lane" + lane.ToString());
+            return fResult;
+#else
             ocxMutex.WaitOne();
             Object tmpObj = obj.GetFurnaceBeltSpeed((short)(lane + 1));
             ocxMutex.ReleaseMutex();
@@ -2011,32 +2141,40 @@ namespace AISIN_WFA
             float fResult = iResult / 100.0F;
             LogWrite("Get belt speed PV: " + fResult.ToString() + " on lane" + lane.ToString());
             return fResult;
+#endif
         }
 
         public void SetBeltSpeed(int lane, float targetSpeed)
         {
+#if true
+            ocx.SetBeltSpeed((short)(lane + beltCount - 1), targetSpeed);
+            LogWrite("Set Belt Speed on lane: " + lane + ", target Speed: " + targetSpeed.ToString("F1"));
+#else
             ocxMutex.WaitOne();
             obj.TakeControl(2);
             int iResult = obj.SetFurnaceBeltSpeed(targetSpeed, (short)(lane + beltCount -1));
             obj.ReleaseControl(2);
             ocxMutex.ReleaseMutex();
             LogWrite("Set Belt Speed on lane: " + lane + ", target Speed: " + targetSpeed.ToString("F1") + ", Result=" + iResult.ToString());
+#endif
         }
 
         public void SetRailWidth(int lane, float targetWidth)
         {
+#if true
+            SetRailWidth((short)(lane + beltCount - 1), targetWidth);
+            LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString());
+#else
             ocxMutex.WaitOne();
             //int cbsCount = CBSExisit[lane] ? lane + 2 : 0;
             int iResult = obj.SetRailWidth((short)(lane + beltCount - 1), targetWidth);
             ocxMutex.ReleaseMutex();
             LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString() + ", Result=" + iResult.ToString());
+#endif
         }
 
         private void refreshSpeedWidth()
         {
-            int iResult = 0;
-            float fResult = 0;
-            string sResult = "";
             if (currentBeltSpeed == null)
                 currentBeltSpeed = new List<float>();
             else
@@ -2054,41 +2192,18 @@ namespace AISIN_WFA
                 {
                     currentBeltWidth.Add(GetRailSetPoint(i));
                     currentBeltSpeed.Add(GetBeltSpeedSetPoint(i));
-                    //LogWrite(string.Format("Refreshed, Lane{0} width: {1}", i, GetRailSetPoint(i)));
-                    //LogWrite(string.Format("Refreshed, Lane{0} speed: {1}", i, GetBeltSpeedSetPoint(i)));
                 }
             }
             catch (Exception ex)
             {
                 LogWrite("Refresh belt speed and belt width error: " + ex.Message);
             }
-            //// remove useless belt width
-            //if (currentBeltSpeed.Count > 2)
-            //{
-            //    LogWrite(TypeInformation, "Belt speed count more than 2");
-            //    foreach (float speed in currentBeltSpeed)
-            //    {
-            //        int i = 1;
-            //        LogWrite(TypeInformation, "Before, Belt speed" + i + ": " + speed);
-            //        currentBeltSpeed = currentBeltSpeed.Distinct().ToList();
-            //        LogWrite(TypeInformation, "After, Belt speed" + i + ": " + speed);
-            //        i++;
-            //    }
-            //    //currentBeltWidth.RemoveAt(0);
-            //}
-            //else if (currentBeltWidth.Count > 2)
-            //{
-            //    LogWrite(TypeInformation, "Belt width more than 2");
-            //    foreach (float width in currentBeltWidth)
-            //    {
-            //        int i = 1;
-            //        LogWrite(TypeInformation, "Before, Belt width" + i + ": " + width);
-            //        currentBeltWidth = currentBeltWidth.Distinct().ToList();
-            //        LogWrite(TypeInformation, "After, Belt width" + i + ": " + width);
-            //        i++;
-            //    }
-            //}
         }
+
+        #endregion
+
+        #region [Button Function]
+
 
         //---------------------------------------------------------------------
         // Method btnSelectPort_Click
@@ -2254,7 +2369,9 @@ namespace AISIN_WFA
                         break;
                     case globalParameter.ePLCType.Mitsubishi:
                         {
-                            dotUtlType1.Close();
+                            //dotUtlType1.Close();
+                            if (UpstreamMxPlc != null)
+                                UpstreamMxPlc.Close();
                         }
                         break;
                     default:
@@ -2342,14 +2459,14 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void btnSelectBarcode_Click(object sender, EventArgs e)
         {
-            try
-            {
-                plcOutputData[0] = Convert.ToInt32(tbBarcodeSelect.Text);
-            }
-            catch (Exception e2)
-            {
-                plcOutputData[0] = 0;
-            }
+            //try
+            //{
+            //    plcOutputData[0] = Convert.ToInt32(tbBarcodeSelect.Text);
+            //}
+            //catch (Exception e2)
+            //{
+            //    plcOutputData[0] = 0;
+            //}
         }
 
         //---------------------------------------------------------------------
@@ -2357,16 +2474,33 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void btnStartComm_Click(object sender, EventArgs e)
         {
-            if (plcCommEnable)
+            switch (globalParameter.PLCType)
             {
-                plcCommEnable = false;
-                btnStartComm.Text = "Start Comm";
+                case globalParameter.ePLCType.None:
+                    break;
+                case globalParameter.ePLCType.OMRON:
+                    {
+                        if (plcCommEnable)
+                        {
+                            plcCommEnable = false;
+                            btnStartComm.Text = "Start Comm";
+                        }
+                        else
+                        {
+                            plcCommEnable = true;
+                            btnStartComm.Text = "Stop Comm";
+                        }
+                    }
+                    break;
+                case globalParameter.ePLCType.Mitsubishi:
+                    {
+
+                    }
+                    break;
+                default:
+                    break;
             }
-            else
-            {
-                plcCommEnable = true;
-                btnStartComm.Text = "Stop Comm";
-            }
+
         }
 
         //---------------------------------------------------------------------
@@ -2374,52 +2508,59 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void btnSaveConfig_Click(object sender, EventArgs e)
         {
-            try
-            {
-                // If does not have administrator permission, nothing will be saved.(Exception)
-                Registry.SetValue(configurationKey, "UpstreamPLCTag", tbUpstreamPLCTag.Text);
-                Registry.SetValue(configurationKey, "DownstreamPLCTag", tbDownstreamPLCTag.Text);
-                Registry.SetValue(configurationKey, "TagIP", tbTagIP.Text);
-                //Registry.SetValue(configurationKey, "BoardTransitLogPath", tbLogFilesFolder.Text);
+            // Move to PlcSetupWindow
+            //try
+            //{
+            //    // 23-Sep-22 MSL v1.19
+            //    UseConfigFile.SetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
+            //    UseConfigFile.SetBoolConfigurationSetting("AutoBarcodeRecipe", globalParameter.autoChangeRecipeWidthSpeed);
 
-                // 23-Sep-22 MSL v1.19
-                SetStringConfigurationSetting("PLCType", combo_PLCType.SelectedItem.ToString());
-                SetStringConfigurationSetting("Lane1EHC", cb_EHC1.SelectedItem.ToString());
-                SetStringConfigurationSetting("Lane2EHC", cb_EHC2.SelectedItem.ToString());
+            //    UseConfigFile.SetStringConfigurationSetting("PLCType", combo_PLCType.SelectedItem.ToString());
+            //    int stationNumber = 0;
+            //    bool bStationNumber = Int32.TryParse(tbPlcStation.Text, out stationNumber);
+            //    if (bStationNumber)
+            //    {
+            //        UseConfigFile.SetIntConfigurationSetting("PLCStation", stationNumber);
+            //    }
+            //    else
+            //    {
+            //        tbPlcStation.Text = globalParameter.UpstreamMxPlcStation.ToString();
+            //        MessageBox.Show("Incorrect station number, please retry enter station number.");
+            //    }
 
-                int stationNumber = 0;
-                bool bStationNumber = Int32.TryParse(tbPlcStation.Text, out stationNumber);
-                if (bStationNumber)
-                {
-                    SetIntConfigurationSetting("PLCStation", stationNumber);
-                }
-                else
-                {
-                    tbPlcStation.Text = globalParameter.PlcStation.ToString();
-                    MessageBox.Show("Incorrect station number, please retry enter station number.");
-                }
+            //    globalParameter.Lane1Rail = cb_EHC1.SelectedItem.ToString();
+            //    UseConfigFile.SetStringConfigurationSetting("Lane1Rail", globalParameter.Lane1Rail);
 
-                SetStringConfigurationSetting("LogFilePath", tbLogFilesFolder.Text);
+            //    globalParameter.Lane2Rail = cb_EHC2.SelectedItem.ToString();
+            //    UseConfigFile.SetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
 
-                if (radioButtonRail2.Checked)
-                    Registry.SetValue(configurationKey, "DefaultRail", 1);
-                else if (radioButtonRail3.Checked)
-                    Registry.SetValue(configurationKey, "DefaultRail", 2);
-                else if (radioButtonRail4.Checked)
-                    Registry.SetValue(configurationKey, "DefaultRail", 3);
-                else
-                    Registry.SetValue(configurationKey, "DefaultRail", 0);
-                Registry.SetValue(configurationKey, "RailLogging", railLogging);
-                MessageBox.Show("PLC configuration saved to registry. Restart this and Barcode Reader application to apply changes.");
-            }
-            catch (UnauthorizedAccessException e2)
-            {
-                MessageBox.Show("Save configuration failure. Restart as Administrator");
-            }
-            catch (Exception e2)
-            {
-                MessageBox.Show("Save configuration exception " + e2.Message);
-            }
+            //    UseConfigFile.SetStringConfigurationSetting("UpstreamPLCTag", tbUpstreamPLCTag.Text);
+            //    UseConfigFile.SetStringConfigurationSetting("DownstreamPLCTag", tbDownstreamPLCTag.Text);
+            //    UseConfigFile.SetStringConfigurationSetting("TagIP", tbTagIP.Text);
+
+            //    if (radioButtonRail2.Checked)
+            //        UseConfigFile.SetIntConfigurationSetting("DefaultRail", 1);
+            //    else if (radioButtonRail3.Checked)
+            //        UseConfigFile.SetIntConfigurationSetting("DefaultRail", 2);
+            //    else if (radioButtonRail4.Checked)
+            //        UseConfigFile.SetIntConfigurationSetting("DefaultRail", 3);
+            //    else
+            //        UseConfigFile.SetIntConfigurationSetting("DefaultRail", 0);
+
+            //    UseConfigFile.SetStringConfigurationSetting("LogFilePath", tbLogFilesFolder.Text);
+
+            //    UseConfigFile.SetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
+
+            //    MessageBox.Show("Saved config file. Please restart this application to apply changes.");
+            //}
+            //catch (UnauthorizedAccessException e2)
+            //{
+            //    MessageBox.Show("Save configuration failure. Restart as Administrator");
+            //}
+            //catch (Exception e2)
+            //{
+            //    MessageBox.Show("Save configuration exception " + e2.Message);
+            //}
         }
 
         //---------------------------------------------------------------------
@@ -2436,6 +2577,18 @@ namespace AISIN_WFA
             BarcodeMappingTable barcodeMap = new BarcodeMappingTable();
             barcodeMap.ShowDialog();
         }
+
+
+
+        private void btn_PlcSettings_Click(object sender, EventArgs e)
+        {
+            PlcSetupWindow setup = new PlcSetupWindow();
+            setup.ShowDialog();
+        }
+
+        #endregion
+
+        #region [Log]
 
         public void LogWrite(string msg)
         {
@@ -2462,30 +2615,582 @@ namespace AISIN_WFA
             }
             logMutex.ReleaseMutex();
         }
+        #endregion
 
-        /// <summary>
-        /// Add 25-Sep-22 MSL v1.19 for Mitsubishi PLC Station
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void combo_PLCType_SelectedIndexChanged(object sender, EventArgs e)
+        #region [No more used]
+        AxHELLERCOMMLib.AxHellerComm obj;
+        // private AxActProgTypeLib.AxActProgType axActProgType1;
+        // private DotUtlType dotUtlType1;
+        Thread waitForOvenEmptyToLoadRecipe = null;
+        const String configurationKey = "HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader";
+        Mutex ocxMutex;
+        Thread updateThread;
+        int updatePeriod;
+        int upstreamPLCPeriod;
+        int downstreamPLCPeriod;
+        byte[] tcpMsgData;
+        Socket barcodeSocket;
+        Boolean barcodeSocketConnected;
+        String upstreamPLCTag;
+        String downstreamPLCTag;
+        String logFilesFolder;
+        String barcodeSocketIP;
+        String tagIP;
+        int barcodeSocketPort;
+        private bool[] CBSExisit = new bool[] { false, false };
+
+        float rail1Width;
+        float rail2Width;
+        float rail3Width;
+        float rail4Width;
+
+
+        const int LIGHT_TOWER_OFF = 0;
+        const int LIGHT_TOWER_RED = 1;
+        const int LIGHT_TOWER_AMBER = 2;
+        const int LIGHT_TOWER_GREEN = 4;
+
+        const int NOTIFICATION_EVENT_LIGHT_TOWER_CHANGE = 30; //ver1.0.66, compatible HC2 software version 8.0.0.42
+        const int NOTIFICATION_EVENT_JOB_CHANGE = 40;
+        const int NOTIFICATION_EVENT_BOARD_ENTERED = 60;
+        const int NOTIFICATION_EVENT_BOARD_EXITED = 61;
+        const int NOTIFICATION_EVENT_LANE1_SMEMA_ENTRY_BA = 71;
+        const int NOTIFICATION_EVENT_LANE2_SMEMA_ENTRY_BA = 72;
+        const int NOTIFICATION_EVENT_LANE3_SMEMA_ENTRY_BA = 73;
+        const int NOTIFICATION_EVENT_LANE4_SMEMA_ENTRY_BA = 74;
+        const int NOTIFICATION_EVENT_LANE1_BOARD_ENTRY = 100;
+        const int NOTIFICATION_EVENT_LANE2_BOARD_ENTRY = 101;
+        const int NOTIFICATION_EVENT_LANE3_BOARD_ENTRY = 102;
+        const int NOTIFICATION_EVENT_LANE4_BOARD_ENTRY = 103;
+        const int NOTIFICATION_EVENT_LANE1_BOARD_EXIT = 104;
+        const int NOTIFICATION_EVENT_LANE2_BOARD_EXIT = 105;
+        const int NOTIFICATION_EVENT_LANE3_BOARD_EXIT = 106;
+        const int NOTIFICATION_EVENT_LANE4_BOARD_EXIT = 107;
+
+        //---------------------------------------------------------------------
+        // Method UpdateThread
+        //---------------------------------------------------------------------
+        private void UpdateThread()
         {
-           string type = combo_PLCType.SelectedItem.ToString();
-
-            switch (type)
+            // forever
+            //while (true)
+            while (RunFlag)
             {
-                case "Mitsubishi":
-                    tbPlcStation.Visible = true;
-                    lbPlcStation.Visible = true;
-                    tbPlcStation.Text = globalParameter.PlcStation.ToString();
+                // query light tower color
+                short lightTowerColor = obj.GetCurrentLightTowerColor();
+                switch (lightTowerColor)
+                {
+                    case LIGHT_TOWER_OFF:
+                        tbLightTowerColor.Text = "Off";
+                        break;
+                    case LIGHT_TOWER_RED:
+                        tbLightTowerColor.Text = "Red";
+                        break;
+                    case LIGHT_TOWER_AMBER:
+                        tbLightTowerColor.Text = "Amber";
+                        break;
+                    case LIGHT_TOWER_GREEN:
+                        tbLightTowerColor.Text = "Green";
+                        break;
+                    default:
+                        tbLightTowerColor.Text = lightTowerColor.ToString("0");
+                        break;
+                }
+
+                // query rail width process values
+                float railWidth;
+                Object variant = obj.GetRailWidth(1);
+                if (variant == null)
+                    railWidth = -1;
+                else
+                    railWidth = (float)variant;
+                tbRail1WidthPV.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(2);
+                if (variant == null)
+                    railWidth = -1;
+                else
+                    railWidth = (float)variant;
+                tbRail2WidthPV.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(3);
+                if (variant == null)
+                    railWidth = -1;
+                else
+                    railWidth = (float)variant;
+                tbRail3WidthPV.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(4);
+                if (variant == null)
+                    railWidth = -1;
+                else
+                    railWidth = (float)variant;
+                tbRail4WidthPV.Text = railWidth.ToString();
+
+                // query rail width setpoints
+                variant = obj.GetRailWidth(101);
+                railWidth = (float)variant;
+                if (railWidth <= 1000.0)
+                    rail1Width = railWidth;
+                tbRail1WidthSP.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(102);
+                railWidth = (float)variant;
+                if (railWidth <= 1000.0)
+                    rail2Width = railWidth;
+                tbRail2WidthSP.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(103);
+                railWidth = (float)variant;
+                if (railWidth <= 1000.0)
+                    rail3Width = railWidth;
+                tbRail3WidthSP.Text = railWidth.ToString();
+                variant = obj.GetRailWidth(104);
+                railWidth = (float)variant;
+                if (railWidth <= 1000.0)
+                    rail4Width = railWidth;
+                tbRail4WidthSP.Text = railWidth.ToString();
+
+                // query boards processed count (49..51,54)
+                float beltProcessed = obj.GetChannel(49);
+                tbBelt1Processed.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(50);
+                tbBelt2Processed.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(51);
+                tbBelt3Processed.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(54);
+                tbBelt4Processed.Text = beltProcessed.ToString();
+
+                // query boards in oven count (46..48,53)
+                beltProcessed = obj.GetChannel(46);
+                tbBelt1InOven.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(47);
+                tbBelt2InOven.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(48);
+                tbBelt3InOven.Text = beltProcessed.ToString();
+                beltProcessed = obj.GetChannel(53);
+                tbBelt4InOven.Text = beltProcessed.ToString();
+
+                // update barcode data
+                String barcodeTextLane1 = "";
+                String barcodeTextLane2 = "";
+                Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
+                Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
+
+                for (int ndx = 0; ndx < BARCODE_MAX; ndx++)
+                {
+                    byte barcodeDigit;
+                    switch (globalParameter.PLCType)
+                    {
+                        case globalParameter.ePLCType.None:
+                            break;
+                        case globalParameter.ePLCType.OMRON:
+                            {
+                                // Big endian
+                                if ((ndx & 1) == 1)
+                                    barcodeDigit = (byte)(plcInputData[ndx / 2] & 0xFF);
+                                else
+                                    barcodeDigit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
+                                barcodeTextLane1 += barcodeDigit.ToString("X2") + " ";
+                                lane1BarcodeByte[ndx] = barcodeDigit;
+                            }
+                            break;
+                        case globalParameter.ePLCType.Mitsubishi:
+                            {
+                                // Little endian
+                                if ((ndx & 1) == 0)
+                                    barcodeDigit = (byte)(plcInputData[ndx / 2] & 0xFF);
+                                else
+                                    barcodeDigit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
+                                barcodeTextLane1 += barcodeDigit.ToString("X2") + " ";
+                                lane1BarcodeByte[ndx] = barcodeDigit;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                //for (int ndx = 100; ndx < BARCODE_MAX; ndx++)
+                //{
+                //    byte barcodeDigit;
+                //    if ((ndx & 1) == 1)
+                //        barcodeDigit = (byte)(plcInputData[ndx / 2] & 0xFF);
+                //    else
+                //        barcodeDigit = (byte)(plcInputData[ndx / 2] >> 8 & 0xFF);
+                //    barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
+                //}
+
+                int startIndex = 100;
+                for (int ndx = startIndex; ndx < startIndex + BARCODE_MAX; ndx++)
+                {
+                    byte barcodeDigit;
+
+                    switch (globalParameter.PLCType)
+                    {
+                        case globalParameter.ePLCType.None:
+                            break;
+                        case globalParameter.ePLCType.OMRON:
+                            {
+                                // Big endian
+                                if ((ndx & 1) == 1)
+                                    barcodeDigit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] & 0xFF);
+                                else
+                                    barcodeDigit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] >> 8 & 0xFF);
+                                //if (barcodeDigit == 0)
+                                //    break;
+                                barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
+                                lane2BarcodeByte[ndx - startIndex] = barcodeDigit;
+                            }
+                            break;
+                        case globalParameter.ePLCType.Mitsubishi:
+                            {
+                                // Little endian
+                                if ((ndx & 1) == 0)
+                                    barcodeDigit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] & 0xFF);
+                                else
+                                    barcodeDigit = (byte)(plcInputData[startIndex + (ndx - startIndex) / 2] >> 8 & 0xFF);
+                                //if (barcodeDigit == 0)
+                                //    break;
+                                barcodeTextLane2 += barcodeDigit.ToString("X2") + " ";
+                                lane2BarcodeByte[ndx - startIndex] = barcodeDigit;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                tbBarcodeLane1.Text = barcodeTextLane1;
+                tbBarcodeLane2.Text = barcodeTextLane2;
+
+                tbBarcodeLane1string.Text = GetBarcodeString(lane1BarcodeByte);
+                tbBarcodeLane2string.Text = GetBarcodeString(lane2BarcodeByte);
+
+                // update BA signal data for lane 1
+                tbBASignalLane1.Text = plcInputData[BA_SIGNAL_ARRAY_NDX_LANE1].ToString();
+                // update BA signal data for lane 2
+                tbBASignalLane2.Text = plcInputData[BA_SIGNAL_ARRAY_NDX_LANE2].ToString();
+
+                // snooze
+                Thread.Sleep(globalParameter.UpdatePeriod);
+
+            }
+        }
+
+
+        //---------------------------------------------------------------------
+        // Method InitializeOCX
+        //
+        // Instantiate and start iMagic ActiveX object
+        //---------------------------------------------------------------------
+        private void InitializeOCX()
+        {
+            // not recommended
+            Control.CheckForIllegalCrossThreadCalls = false;
+            logMutex = new Mutex();
+            LogWrite("ASIN line software: " + revision);
+
+            // access Heller COMM Control ActiveX
+            obj = new AxHELLERCOMMLib.AxHellerComm();
+            obj.CreateControl();
+            bool result = obj.StartCommunicating(1);
+            if (!result)
+                MessageBox.Show("StartCommunicating failure");
+            result = obj.StartOven();
+            if (!result)
+                MessageBox.Show("StartOven failure");
+
+            // hook notification events
+            obj.NotificationEvent += new AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEventHandler(this.NotificationEvent);
+
+            // initialize buffers
+            plcInputData = new Int32[PLC_MEMORY_MAX];
+            Array.Clear(plcInputData, 0, PLC_MEMORY_MAX);
+            plcOutputData = new Int32[PLC_MEMORY_MAX];
+            Array.Clear(plcOutputData, 0, PLC_MEMORY_MAX);
+            barcodeData = new byte[BARCODE_MAX];
+            Array.Clear(barcodeData, 0, BARCODE_MAX);
+            //tcpMsgData = new byte[TCP_MSG_MAX];
+            //Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
+
+            lane1BarcodeData = new byte[TCP_MSG_MAX];
+            Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
+            lane2BarcodeData = new byte[TCP_MSG_MAX];
+            Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
+
+            lane1BarcodeByte = new byte[BARCODE_MAX];
+            Array.Clear(lane1BarcodeByte, 0, BARCODE_MAX);
+            lane2BarcodeByte = new byte[BARCODE_MAX];
+            Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
+
+            // initialize booleans
+            barcodeSocketConnected = false;
+            BASignal = false;
+            plcCommEnable = true;
+            closeOK = false;
+            barcodeRecipeEmptyDisplayed = false;
+
+            // initialize other
+            rail1Width = 0;
+            rail2Width = 0;
+            rail3Width = 0;
+            rail4Width = 0;
+
+            ocxMutex = new Mutex();
+#if false   // 25-Sep-22 MSL v1.19
+            globalParameter.autoChangeRecipeWidthSpeed = Properties.Settings.Default.AutoBarcodeRecipe;
+            globalParameter.holdSmemaUntilBarcode = Properties.Settings.Default.HoldSmemaBarcode;
+#endif
+            // hold smema for all lanes
+            if (globalParameter.holdSmemaUntilBarcode)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    SmemaLaneHold(i, 1);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    SmemaLaneHold(i, 0);
+                }
+            }
+
+            // read barcode recipe mapping table.
+            globalFunctions.initializeBarcodeRecipeTable();
+            initializeBeltSpeedCountAndCBS();
+
+            // initialize mutex
+            plcMutex = new Mutex();
+
+            // read configuration
+            //tbUpstreamPLCTag.Text = upstreamPLCTag = (String)Registry.GetValue(configurationKey, "UpstreamPLCTag", "RE1inAMCV1");
+            //tbDownstreamPLCTag.Text = downstreamPLCTag = (String)Registry.GetValue(configurationKey, "DownstreamPLCTag", "RE1outAMCV1");
+            //tbTagIP.Text = tagIP = (String)Registry.GetValue(configurationKey, "TagIP", "192.168.241.9");
+
+            // 25-Sep-22 MSL v1.19 - Move to LoadConfigurationSettings()
+            //tbLogFilesFolder.Text = globalParameter.debugLogFolder = Properties.Settings.Default.LogFilePath;
+
+
+#if false   // 25-Sep-22 MSL v1.19 - Move to LoadConfigurationSettings()
+            combo_PLCType.Text = globalParameter.PLCType = Properties.Settings.Default.PLCType; // 25-Sep-22 MSL v1.19
+#endif
+            //barcodeSocketIP = (String)Registry.GetValue(configurationKey, "IP", "127.0.0.1");
+
+
+
+            try
+            {
+                barcodeSocketPort = (int)Registry.GetValue(configurationKey, "Port", 31000);
+            }
+            catch (Exception e)
+            {
+                barcodeSocketPort = 31000;
+            }
+            try
+            {
+                updatePeriod = (int)Registry.GetValue(configurationKey, "UpdatePeriod", 2000);
+            }
+            catch (Exception e)
+            {
+                updatePeriod = 2000;
+            }
+            try
+            {
+                upstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "UpstreamPLCPeriod", 1000);
+            }
+            catch (Exception e)
+            {
+                upstreamPLCPeriod = 1000;
+            }
+            try
+            {
+                downstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "DownstreamPLCPeriod", 1000);
+            }
+            catch (Exception e)
+            {
+                downstreamPLCPeriod = 1000;
+            }
+            try
+            {
+                defaultRail = (int)Registry.GetValue(configurationKey, "DefaultRail", 0);
+            }
+            catch (Exception e)
+            {
+                defaultRail = 0;
+            }
+            try
+            {
+                string strLog = (string)Registry.GetValue(configurationKey, "RailLogging", "false");
+                switch (strLog)
+                {
+                    case "true":
+                        railLogging = true;
+                        break;
+                    case "false":
+                        railLogging = false;
+                        break;
+                    default:
+                        railLogging = false;
+                        break;
+                }
+
+                //railLogging = (Boolean)Registry.GetValue(configurationKey, "RailLogging", false);
+            }
+            catch (Exception e)
+            {
+                railLogging = false;
+            }
+
+            //switch (defaultRail)
+            //{
+            //    case 0:
+            //        radioButtonRail1.Checked = true;
+            //        radioButtonRail2.Checked = false;
+            //        radioButtonRail3.Checked = false;
+            //        radioButtonRail4.Checked = false;
+            //        break;
+            //    case 1:
+            //        radioButtonRail1.Checked = false;
+            //        radioButtonRail2.Checked = true;
+            //        radioButtonRail3.Checked = false;
+            //        radioButtonRail4.Checked = false;
+            //        break;
+            //    case 2:
+            //        radioButtonRail1.Checked = false;
+            //        radioButtonRail2.Checked = false;
+            //        radioButtonRail3.Checked = true;
+            //        radioButtonRail4.Checked = false;
+            //        break;
+            //    case 3:
+            //        radioButtonRail1.Checked = false;
+            //        radioButtonRail2.Checked = false;
+            //        radioButtonRail3.Checked = false;
+            //        radioButtonRail4.Checked = true;
+            //        break;
+            //}
+
+
+
+            // start display update thread
+            updateThread = new Thread(new ThreadStart(UpdateThread));
+            updateThread.Start();
+
+            // 23-Sep-22 MSL v1.19
+#if true
+            // Create instance
+            switch (globalParameter.PLCType)
+            {
+                case globalParameter.ePLCType.None:
+                    {
+                        MessageBox.Show("Please setup to PLC Type");
+                    }
                     break;
-                case "OMRON":
-                case "None":
+                case globalParameter.ePLCType.OMRON:
+                    {
+                        compolet = new OMRON.Compolet.CIP.CJ2Compolet();
+                        //start downstream PLC thread
+                        UpDownstreamThread();
+                    }
+                    break;
+                case globalParameter.ePLCType.Mitsubishi:
+                    {
+                        //lbPlcStation.Visible = true;
+                        //tbPlcStation.Visible = true;
+
+                        //tbPlcStation.Text = globalParameter.UpstreamMxPlcStation.ToString();
+                        int station = globalParameter.UpstreamMxPlcStation;
+                        //dotUtlType1 = new DotUtlType() { ActLogicalStationNumber = station };
+                        //dotUtlType1.Open();
+                        UpDownstreamThread();
+                    }
+                    break;
                 default:
-                    tbPlcStation.Visible = false;
-                    lbPlcStation.Visible = false;
+                    break;
+            }
+#else
+            if (globalParameter.PLCType != "None")
+            {
+                if (globalParameter.PLCType == "Mitsubishi")
+                {
+                    dotUtlType1.Open();
+                }
+
+                // start downstream PLC thread
+                downstreamThread = new Thread(new ThreadStart(DownstreamThread));
+                downstreamThread.Start();
+
+                // start upstream PLC thread
+                upstreamThread = new Thread(new ThreadStart(UpstreamThread));
+                upstreamThread.Start();
+            }
+#endif
+
+        }
+
+        private void initializeBeltSpeedCountAndCBS()
+        {
+            beltCount = GetBeltCount();
+            for (int i = 0; i < 2; i++)
+            {
+                CBSExisit[i] = CheckCBSExist(i);
+            }
+
+            // double check CBS
+            if (GetRailSetPoint(2) > 0)
+                CBSExisit[0] = true;
+            if (GetRailSetPoint(3) > 0)
+                CBSExisit[1] = true;
+        }
+
+        private void NotificationEvent(object sender, AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEvent e)
+        {
+            int iResult = 0;
+            float fResult = 0.0F;
+            string sResult = null;
+            int[] iArg = new int[3];        //1.0.82 extend 2 -> 3 
+            string[] sArg = new string[1];
+            int lane;
+
+            // switch on type of notification
+            switch (e.lEventID)
+            {
+                case NOTIFICATION_EVENT_BOARD_ENTERED:
+                    break;
+                case NOTIFICATION_EVENT_BOARD_EXITED:
+                    break;
+                case NOTIFICATION_EVENT_JOB_CHANGE:
+                    break;
+                case NOTIFICATION_EVENT_LANE1_BOARD_ENTRY:
+                    {
+                        // hold smema for lane1 again
+                        SmemaLaneHold(0, 1);
+                        LogWrite("Board entered on lane1, hold smema again.");
+                    }
+                    break;
+                case NOTIFICATION_EVENT_LANE2_BOARD_ENTRY:
+                    {
+                        // hold smema for lane2 again
+                        SmemaLaneHold(1, 1);
+                        LogWrite("Board eentered on lane2, hold smema again");
+                    }
+                    break;
+                case NOTIFICATION_EVENT_LANE3_BOARD_ENTRY:
+                    break;
+                case NOTIFICATION_EVENT_LANE4_BOARD_ENTRY:
+                    break;
+                case NOTIFICATION_EVENT_LANE1_BOARD_EXIT:
+                    break;
+                case NOTIFICATION_EVENT_LANE2_BOARD_EXIT:
+                    break;
+                case NOTIFICATION_EVENT_LANE3_BOARD_EXIT:
+                    break;
+                case NOTIFICATION_EVENT_LANE4_BOARD_EXIT:
                     break;
             }
         }
+
+
+
+        #endregion
+
+
     }
 }

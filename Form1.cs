@@ -245,7 +245,17 @@ namespace AISIN_WFA
                         break;
                     case globalParameter.ePLCType.OMRON:
                         {
-                            compolet = new OMRON.Compolet.CIP.CJ2Compolet();
+                            this.components = new System.ComponentModel.Container();
+                            compolet = new OMRON.Compolet.CIP.CJ2Compolet(this.components);
+                            compolet.Active = true;
+                            compolet.HeartBeatTimer = 0;
+                            compolet.LocalPort = 2;
+                            compolet.PeerAddress = null;
+                            compolet.ReceiveTimeLimit = ((long)(750));
+                            compolet.RoutePath = "";
+                            compolet.UseRoutePath = false;
+                            compolet.OnHeartBeatTimer += new System.EventHandler(this.compolet_OnHeartBeatTimer);
+
                             plcCommEnable = true;
                             //start downstream PLC thread
                             UpDownstreamThread();
