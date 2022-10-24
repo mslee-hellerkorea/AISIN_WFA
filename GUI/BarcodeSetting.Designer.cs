@@ -1,4 +1,5 @@
-﻿namespace AISIN_WFA
+﻿
+namespace AISIN_WFA.GUI
 {
     partial class BarcodeSetting
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace AISIN_WFA
+namespace AISIN_WFA.GUI
 {
     public partial class BarcodeReaderConfiguration : Form
     {
@@ -92,7 +92,7 @@ namespace AISIN_WFA
                     this.stopBits = System.IO.Ports.StopBits.None;
                     break;
                 case 1:
-                default :
+                default:
                     this.stopBits = System.IO.Ports.StopBits.One;
                     break;
                 case 2:
@@ -106,20 +106,20 @@ namespace AISIN_WFA
             // remember selected parity
             switch (this.cbBarcodeReaderParity.SelectedIndex)
             {
-                case 0 :
-                default :
+                case 0:
+                default:
                     this.parity = System.IO.Ports.Parity.None;
                     break;
-                case 1 :
+                case 1:
                     this.parity = System.IO.Ports.Parity.Even;
                     break;
-                case 2 :
+                case 2:
                     this.parity = System.IO.Ports.Parity.Odd;
                     break;
-                case 3 :
+                case 3:
                     this.parity = System.IO.Ports.Parity.Mark;
                     break;
-                case 4 :
+                case 4:
                     this.parity = System.IO.Ports.Parity.Space;
                     break;
             }
@@ -131,13 +131,13 @@ namespace AISIN_WFA
                 default:
                     this.flowControl = System.IO.Ports.Handshake.None;
                     break;
-                case 1 :
+                case 1:
                     this.flowControl = System.IO.Ports.Handshake.RequestToSend;
                     break;
-                case 2 :
+                case 2:
                     this.flowControl = System.IO.Ports.Handshake.XOnXOff;
                     break;
-                case 3 :
+                case 3:
                     this.flowControl = System.IO.Ports.Handshake.RequestToSendXOnXOff;
                     break;
             }
@@ -158,7 +158,7 @@ namespace AISIN_WFA
                     this.bitRate = 57600;
                     break;
                 case 4:
-                default :
+                default:
                     this.bitRate = 115200;
                     break;
             }

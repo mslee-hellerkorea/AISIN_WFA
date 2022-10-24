@@ -1,4 +1,5 @@
-﻿using AISIN_WFA.Utility;
+﻿using AISIN_WFA.Models;
+using AISIN_WFA.Utility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

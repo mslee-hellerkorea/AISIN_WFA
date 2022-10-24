@@ -1,5 +1,5 @@
-﻿using AISIN_WFA.Utility;
-using Microsoft.Win32;
+﻿using AISIN_WFA.Models;
+using AISIN_WFA.Utility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace AISIN_WFA
+namespace AISIN_WFA.GUI
 {
     public partial class BarcodeSetting : Form
     {

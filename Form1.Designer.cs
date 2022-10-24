@@ -396,7 +396,7 @@ namespace AISIN_WFA
             this.btnConnect.TabIndex = 84;
             this.btnConnect.Text = "Barcode Settings";
             this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btn_map_barcode_Click);
+            this.btnConnect.Click += new System.EventHandler(this.btnBarcodeSetting_Click);
             // 
             // tbBelt4Processed
             // 

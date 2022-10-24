@@ -2464,6 +2464,18 @@ namespace AISIN_WFA
 
         }
 
+        private void btnBarcodeSetting_Click(object sender, EventArgs e)
+        {
+            BarcodeSetting barcodeSetting = BarcodeSetting.AddFormInstance();
+            if (!barcodeSetting.Visible)
+            {
+                barcodeSetting.StartPosition = FormStartPosition.CenterParent;
+                barcodeSetting.TopMost = true;
+                barcodeSetting.Show();
+            }
+
+        }
+
         //---------------------------------------------------------------------
         // Method btnSelectBarcode_Click
         //---------------------------------------------------------------------
@@ -2587,8 +2599,6 @@ namespace AISIN_WFA
             BarcodeMappingTable barcodeMap = new BarcodeMappingTable();
             barcodeMap.ShowDialog();
         }
-
-
 
         private void btn_PlcSettings_Click(object sender, EventArgs e)
         {

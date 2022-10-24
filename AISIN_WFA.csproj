@@ -131,29 +131,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BarcodeMappingTable.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BarcodeMappingTable.Designer.cs">
-      <DependentUpon>BarcodeMappingTable.cs</DependentUpon>
-    </Compile>
-    <Compile Include="BarcodeReaderConfiguration.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BarcodeReaderConfiguration.Designer.cs">
-      <DependentUpon>BarcodeReaderConfiguration.cs</DependentUpon>
-    </Compile>
-    <Compile Include="BarcodeSetting.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="BarcodeSetting.Designer.cs">
-      <DependentUpon>BarcodeSetting.cs</DependentUpon>
-    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\BarcodeMappingTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\BarcodeMappingTable.Designer.cs">
+      <DependentUpon>BarcodeMappingTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\BarcodeReaderConfiguration.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\BarcodeReaderConfiguration.Designer.cs">
+      <DependentUpon>BarcodeReaderConfiguration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\BarcodeSetting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\BarcodeSetting.Designer.cs">
+      <DependentUpon>BarcodeSetting.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\PlcSetupWindow.cs">
       <SubType>Form</SubType>
@@ -161,8 +161,10 @@
     <Compile Include="GUI\PlcSetupWindow.Designer.cs">
       <DependentUpon>PlcSetupWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="HellerJSONProperty.cs" />
+    <Compile Include="Models\barcodeRecipe.cs" />
     <Compile Include="Models\ChannelInfo.cs" />
+    <Compile Include="Models\globalFunctions.cs" />
+    <Compile Include="Models\globalParameter.cs" />
     <Compile Include="Models\MxWrapper.cs" />
     <Compile Include="Models\OcxWrappercs.cs" />
     <Compile Include="Models\OvenState.cs" />
@@ -173,17 +175,11 @@
     <Compile Include="Utility\UseConfigFile.cs" />
     <Compile Include="Utility\UseXMLConfig.cs" />
     <Compile Include="Utility\Util.cs" />
-    <EmbeddedResource Include="BarcodeMappingTable.resx">
-      <DependentUpon>BarcodeMappingTable.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BarcodeReaderConfiguration.resx">
-      <DependentUpon>BarcodeReaderConfiguration.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BarcodeSetting.resx">
-      <DependentUpon>BarcodeSetting.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\BarcodeMappingTable.resx">
+      <DependentUpon>BarcodeMappingTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\PlcSetupWindow.resx">
       <DependentUpon>PlcSetupWindow.cs</DependentUpon>
