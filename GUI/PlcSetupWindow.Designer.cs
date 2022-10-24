@@ -34,31 +34,36 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.cb_PlcType = new System.Windows.Forms.ComboBox();
-            this.btnSave = new System.Windows.Forms.Button();
             this.tabctrl_PlcType = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.tb_UpstreamStation = new System.Windows.Forms.TextBox();
             this.tb_Lane1BcrAddr = new System.Windows.Forms.TextBox();
             this.tb_Lane1BaAddr = new System.Windows.Forms.TextBox();
-            this.tb_DownStation = new System.Windows.Forms.TextBox();
-            this.tb_Lane1RailWidthAddr = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             this.tb_Lane2BcrAddr = new System.Windows.Forms.TextBox();
             this.tb_Lane2BaAddr = new System.Windows.Forms.TextBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.tb_DownStation = new System.Windows.Forms.TextBox();
+            this.tb_Lane1RailWidthAddr = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.tb_Lane2RailWidthAddr = new System.Windows.Forms.TextBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tbTagIP = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tbDownstreamPLCTag = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.tbUpstreamPLCTag = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.label10 = new System.Windows.Forms.Label();
@@ -71,38 +76,37 @@ namespace AISIN_WFA.GUI
             this.label13 = new System.Windows.Forms.Label();
             this.cb_Lane1Rail = new System.Windows.Forms.ComboBox();
             this.cb_Lane2Rail = new System.Windows.Forms.ComboBox();
-            this.tbTagIP = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.tbDownstreamPLCTag = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.tbUpstreamPLCTag = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel8 = new System.Windows.Forms.TableLayoutPanel();
             this.label17 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
             this.tbLogFilesFolder = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.tableLayoutPanel10 = new System.Windows.Forms.TableLayoutPanel();
+            this.ckb_RailLog = new System.Windows.Forms.CheckBox();
+            this.btnSave = new System.Windows.Forms.Button();
             this.btn_Modify = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel9 = new System.Windows.Forms.TableLayoutPanel();
+            this.btn_Close = new System.Windows.Forms.Button();
+            this.label18 = new System.Windows.Forms.Label();
+            this.tb_EventLogPath = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tabctrl_PlcType.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.tableLayoutPanel6.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.tableLayoutPanel7.SuspendLayout();
             this.groupBox6.SuspendLayout();
             this.tableLayoutPanel8.SuspendLayout();
+            this.tableLayoutPanel10.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -162,7 +166,7 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 38F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(240, 40);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
@@ -172,7 +176,7 @@ namespace AISIN_WFA.GUI
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(73, 31);
+            this.label1.Size = new System.Drawing.Size(74, 40);
             this.label1.TabIndex = 0;
             this.label1.Text = "PLC Type :";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -181,23 +185,11 @@ namespace AISIN_WFA.GUI
             // 
             this.cb_PlcType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.cb_PlcType.FormattingEnabled = true;
-            this.cb_PlcType.Location = new System.Drawing.Point(82, 8);
+            this.cb_PlcType.Location = new System.Drawing.Point(83, 9);
             this.cb_PlcType.Name = "cb_PlcType";
-            this.cb_PlcType.Size = new System.Drawing.Size(155, 21);
+            this.cb_PlcType.Size = new System.Drawing.Size(154, 21);
             this.cb_PlcType.TabIndex = 1;
             this.cb_PlcType.SelectedIndexChanged += new System.EventHandler(this.cb_PlcType_SelectedIndexChanged);
-            // 
-            // btnSave
-            // 
-            this.btnSave.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnSave.Location = new System.Drawing.Point(543, 3);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(131, 40);
-            this.btnSave.TabIndex = 1;
-            this.btnSave.Tag = "Save";
-            this.btnSave.Text = "Save";
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.button_Click);
             // 
             // tabctrl_PlcType
             // 
@@ -223,22 +215,6 @@ namespace AISIN_WFA.GUI
             this.tabPage1.Text = "Mitsubishi";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.tbTagIP);
-            this.tabPage2.Controls.Add(this.label16);
-            this.tabPage2.Controls.Add(this.tbDownstreamPLCTag);
-            this.tabPage2.Controls.Add(this.label14);
-            this.tabPage2.Controls.Add(this.tbUpstreamPLCTag);
-            this.tabPage2.Controls.Add(this.label15);
-            this.tabPage2.Location = new System.Drawing.Point(4, 25);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(663, 217);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Omron";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
             // tableLayoutPanel3
             // 
             this.tableLayoutPanel3.ColumnCount = 2;
@@ -251,8 +227,8 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 1;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 211F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 211F));
             this.tableLayoutPanel3.Size = new System.Drawing.Size(657, 211);
             this.tableLayoutPanel3.TabIndex = 0;
             // 
@@ -266,17 +242,6 @@ namespace AISIN_WFA.GUI
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Upstream";
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.tableLayoutPanel5);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox3.Location = new System.Drawing.Point(331, 3);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(323, 205);
-            this.groupBox3.TabIndex = 1;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Downstream";
             // 
             // tableLayoutPanel4
             // 
@@ -305,30 +270,6 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.Size = new System.Drawing.Size(316, 186);
             this.tableLayoutPanel4.TabIndex = 0;
-            // 
-            // tableLayoutPanel5
-            // 
-            this.tableLayoutPanel5.ColumnCount = 2;
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this.tableLayoutPanel5.Controls.Add(this.label5, 0, 0);
-            this.tableLayoutPanel5.Controls.Add(this.label6, 0, 1);
-            this.tableLayoutPanel5.Controls.Add(this.tb_DownStation, 1, 0);
-            this.tableLayoutPanel5.Controls.Add(this.tb_Lane1RailWidthAddr, 1, 1);
-            this.tableLayoutPanel5.Controls.Add(this.label9, 0, 3);
-            this.tableLayoutPanel5.Controls.Add(this.tb_Lane2RailWidthAddr, 1, 3);
-            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel5.Location = new System.Drawing.Point(3, 16);
-            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
-            this.tableLayoutPanel5.RowCount = 6;
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(317, 186);
-            this.tableLayoutPanel5.TabIndex = 0;
             // 
             // label2
             // 
@@ -363,28 +304,6 @@ namespace AISIN_WFA.GUI
             this.label4.Text = "Lane 1 Board Available Address :";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(3, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(184, 30);
-            this.label5.TabIndex = 0;
-            this.label5.Text = "Station Number :";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(3, 30);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(184, 30);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "Lane 1 Rail Width Address :";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // tb_UpstreamStation
             // 
             this.tb_UpstreamStation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -409,22 +328,6 @@ namespace AISIN_WFA.GUI
             this.tb_Lane1BaAddr.Size = new System.Drawing.Size(121, 20);
             this.tb_Lane1BaAddr.TabIndex = 1;
             // 
-            // tb_DownStation
-            // 
-            this.tb_DownStation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_DownStation.Location = new System.Drawing.Point(193, 5);
-            this.tb_DownStation.Name = "tb_DownStation";
-            this.tb_DownStation.Size = new System.Drawing.Size(121, 20);
-            this.tb_DownStation.TabIndex = 1;
-            // 
-            // tb_Lane1RailWidthAddr
-            // 
-            this.tb_Lane1RailWidthAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_Lane1RailWidthAddr.Location = new System.Drawing.Point(193, 35);
-            this.tb_Lane1RailWidthAddr.Name = "tb_Lane1RailWidthAddr";
-            this.tb_Lane1RailWidthAddr.Size = new System.Drawing.Size(121, 20);
-            this.tb_Lane1RailWidthAddr.TabIndex = 1;
-            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -447,17 +350,6 @@ namespace AISIN_WFA.GUI
             this.label8.Text = "Lane 2 Board Available Address :";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label9.Location = new System.Drawing.Point(3, 90);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(184, 30);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "Lane 2 Rail Width Address :";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // tb_Lane2BcrAddr
             // 
             this.tb_Lane2BcrAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -474,6 +366,90 @@ namespace AISIN_WFA.GUI
             this.tb_Lane2BaAddr.Size = new System.Drawing.Size(121, 20);
             this.tb_Lane2BaAddr.TabIndex = 1;
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.tableLayoutPanel5);
+            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox3.Location = new System.Drawing.Point(331, 3);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(323, 205);
+            this.groupBox3.TabIndex = 1;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Downstream";
+            // 
+            // tableLayoutPanel5
+            // 
+            this.tableLayoutPanel5.ColumnCount = 2;
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.tableLayoutPanel5.Controls.Add(this.label5, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.label6, 0, 1);
+            this.tableLayoutPanel5.Controls.Add(this.tb_DownStation, 1, 0);
+            this.tableLayoutPanel5.Controls.Add(this.tb_Lane1RailWidthAddr, 1, 1);
+            this.tableLayoutPanel5.Controls.Add(this.label9, 0, 3);
+            this.tableLayoutPanel5.Controls.Add(this.tb_Lane2RailWidthAddr, 1, 3);
+            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(3, 16);
+            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
+            this.tableLayoutPanel5.RowCount = 6;
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(317, 186);
+            this.tableLayoutPanel5.TabIndex = 0;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label5.Location = new System.Drawing.Point(3, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(184, 30);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "Station Number :";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label6.Location = new System.Drawing.Point(3, 30);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(184, 30);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "Lane 1 Rail Width Address :";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_DownStation
+            // 
+            this.tb_DownStation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_DownStation.Location = new System.Drawing.Point(193, 5);
+            this.tb_DownStation.Name = "tb_DownStation";
+            this.tb_DownStation.Size = new System.Drawing.Size(121, 20);
+            this.tb_DownStation.TabIndex = 1;
+            // 
+            // tb_Lane1RailWidthAddr
+            // 
+            this.tb_Lane1RailWidthAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_Lane1RailWidthAddr.Location = new System.Drawing.Point(193, 35);
+            this.tb_Lane1RailWidthAddr.Name = "tb_Lane1RailWidthAddr";
+            this.tb_Lane1RailWidthAddr.Size = new System.Drawing.Size(121, 20);
+            this.tb_Lane1RailWidthAddr.TabIndex = 1;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label9.Location = new System.Drawing.Point(3, 90);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(184, 30);
+            this.label9.TabIndex = 2;
+            this.label9.Text = "Lane 2 Rail Width Address :";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // tb_Lane2RailWidthAddr
             // 
             this.tb_Lane2RailWidthAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -481,6 +457,76 @@ namespace AISIN_WFA.GUI
             this.tb_Lane2RailWidthAddr.Name = "tb_Lane2RailWidthAddr";
             this.tb_Lane2RailWidthAddr.Size = new System.Drawing.Size(121, 20);
             this.tb_Lane2RailWidthAddr.TabIndex = 1;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.tbTagIP);
+            this.tabPage2.Controls.Add(this.label16);
+            this.tabPage2.Controls.Add(this.tbDownstreamPLCTag);
+            this.tabPage2.Controls.Add(this.label14);
+            this.tabPage2.Controls.Add(this.tbUpstreamPLCTag);
+            this.tabPage2.Controls.Add(this.label15);
+            this.tabPage2.Location = new System.Drawing.Point(4, 25);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(663, 217);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Omron";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // tbTagIP
+            // 
+            this.tbTagIP.Location = new System.Drawing.Point(147, 79);
+            this.tbTagIP.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.tbTagIP.Name = "tbTagIP";
+            this.tbTagIP.Size = new System.Drawing.Size(263, 20);
+            this.tbTagIP.TabIndex = 114;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(24, 82);
+            this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(68, 13);
+            this.label16.TabIndex = 113;
+            this.label16.Text = "Oven Tag IP";
+            // 
+            // tbDownstreamPLCTag
+            // 
+            this.tbDownstreamPLCTag.Location = new System.Drawing.Point(147, 46);
+            this.tbDownstreamPLCTag.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.tbDownstreamPLCTag.Name = "tbDownstreamPLCTag";
+            this.tbDownstreamPLCTag.Size = new System.Drawing.Size(263, 20);
+            this.tbDownstreamPLCTag.TabIndex = 112;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(24, 49);
+            this.label14.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(111, 13);
+            this.label14.TabIndex = 111;
+            this.label14.Text = "Downstream PLC Tag";
+            // 
+            // tbUpstreamPLCTag
+            // 
+            this.tbUpstreamPLCTag.Location = new System.Drawing.Point(147, 14);
+            this.tbUpstreamPLCTag.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.tbUpstreamPLCTag.Name = "tbUpstreamPLCTag";
+            this.tbUpstreamPLCTag.Size = new System.Drawing.Size(263, 20);
+            this.tbUpstreamPLCTag.TabIndex = 110;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(24, 17);
+            this.label15.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(97, 13);
+            this.label15.TabIndex = 109;
+            this.label15.Text = "Upstream PLC Tag";
             // 
             // groupBox4
             // 
@@ -511,7 +557,7 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel6.Size = new System.Drawing.Size(413, 40);
             this.tableLayoutPanel6.TabIndex = 0;
             // 
@@ -626,60 +672,6 @@ namespace AISIN_WFA.GUI
             this.cb_Lane2Rail.Size = new System.Drawing.Size(114, 21);
             this.cb_Lane2Rail.TabIndex = 1;
             // 
-            // tbTagIP
-            // 
-            this.tbTagIP.Location = new System.Drawing.Point(147, 79);
-            this.tbTagIP.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.tbTagIP.Name = "tbTagIP";
-            this.tbTagIP.Size = new System.Drawing.Size(263, 20);
-            this.tbTagIP.TabIndex = 114;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(24, 82);
-            this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(68, 13);
-            this.label16.TabIndex = 113;
-            this.label16.Text = "Oven Tag IP";
-            // 
-            // tbDownstreamPLCTag
-            // 
-            this.tbDownstreamPLCTag.Location = new System.Drawing.Point(147, 46);
-            this.tbDownstreamPLCTag.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.tbDownstreamPLCTag.Name = "tbDownstreamPLCTag";
-            this.tbDownstreamPLCTag.Size = new System.Drawing.Size(263, 20);
-            this.tbDownstreamPLCTag.TabIndex = 112;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(24, 49);
-            this.label14.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(111, 13);
-            this.label14.TabIndex = 111;
-            this.label14.Text = "Downstream PLC Tag";
-            // 
-            // tbUpstreamPLCTag
-            // 
-            this.tbUpstreamPLCTag.Location = new System.Drawing.Point(147, 14);
-            this.tbUpstreamPLCTag.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.tbUpstreamPLCTag.Name = "tbUpstreamPLCTag";
-            this.tbUpstreamPLCTag.Size = new System.Drawing.Size(263, 20);
-            this.tbUpstreamPLCTag.TabIndex = 110;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(24, 17);
-            this.label15.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(97, 13);
-            this.label15.TabIndex = 109;
-            this.label15.Text = "Upstream PLC Tag";
-            // 
             // groupBox6
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.groupBox6, 5);
@@ -695,12 +687,13 @@ namespace AISIN_WFA.GUI
             // tableLayoutPanel8
             // 
             this.tableLayoutPanel8.ColumnCount = 2;
-            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 24.69734F));
-            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 75.30267F));
+            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26.39225F));
+            this.tableLayoutPanel8.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 73.60775F));
             this.tableLayoutPanel8.Controls.Add(this.label17, 0, 0);
-            this.tableLayoutPanel8.Controls.Add(this.label18, 0, 1);
             this.tableLayoutPanel8.Controls.Add(this.tbLogFilesFolder, 1, 0);
-            this.tableLayoutPanel8.Controls.Add(this.textBox2, 1, 1);
+            this.tableLayoutPanel8.Controls.Add(this.tableLayoutPanel10, 0, 2);
+            this.tableLayoutPanel8.Controls.Add(this.label18, 0, 1);
+            this.tableLayoutPanel8.Controls.Add(this.tb_EventLogPath, 1, 1);
             this.tableLayoutPanel8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel8.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel8.Name = "tableLayoutPanel8";
@@ -718,37 +711,58 @@ namespace AISIN_WFA.GUI
             this.label17.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label17.Location = new System.Drawing.Point(3, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(95, 30);
+            this.label17.Size = new System.Drawing.Size(103, 30);
             this.label17.TabIndex = 0;
-            this.label17.Text = "Log Files Folder";
+            this.label17.Text = "Trace Files Folder :";
             this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label18.Location = new System.Drawing.Point(3, 30);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(95, 30);
-            this.label18.TabIndex = 0;
-            this.label18.Text = "RailLogging";
-            this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // tbLogFilesFolder
             // 
             this.tbLogFilesFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbLogFilesFolder.Location = new System.Drawing.Point(104, 5);
+            this.tbLogFilesFolder.Location = new System.Drawing.Point(112, 5);
             this.tbLogFilesFolder.Name = "tbLogFilesFolder";
-            this.tbLogFilesFolder.Size = new System.Drawing.Size(306, 20);
+            this.tbLogFilesFolder.Size = new System.Drawing.Size(298, 20);
             this.tbLogFilesFolder.TabIndex = 1;
             // 
-            // textBox2
+            // tableLayoutPanel10
             // 
-            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox2.Location = new System.Drawing.Point(104, 35);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(306, 20);
-            this.textBox2.TabIndex = 1;
+            this.tableLayoutPanel10.ColumnCount = 2;
+            this.tableLayoutPanel8.SetColumnSpan(this.tableLayoutPanel10, 2);
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel10.Controls.Add(this.ckb_RailLog, 0, 0);
+            this.tableLayoutPanel10.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel10.Location = new System.Drawing.Point(0, 60);
+            this.tableLayoutPanel10.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanel10.Name = "tableLayoutPanel10";
+            this.tableLayoutPanel10.RowCount = 1;
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.tableLayoutPanel10.Size = new System.Drawing.Size(413, 30);
+            this.tableLayoutPanel10.TabIndex = 2;
+            // 
+            // ckb_RailLog
+            // 
+            this.ckb_RailLog.AutoSize = true;
+            this.ckb_RailLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ckb_RailLog.Location = new System.Drawing.Point(3, 3);
+            this.ckb_RailLog.Name = "ckb_RailLog";
+            this.ckb_RailLog.Size = new System.Drawing.Size(200, 24);
+            this.ckb_RailLog.TabIndex = 0;
+            this.ckb_RailLog.Text = "Rail Width Log";
+            this.ckb_RailLog.UseVisualStyleBackColor = true;
+            // 
+            // btnSave
+            // 
+            this.btnSave.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnSave.Location = new System.Drawing.Point(543, 3);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(131, 40);
+            this.btnSave.TabIndex = 1;
+            this.btnSave.Tag = "Save";
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.button_Click);
             // 
             // btn_Modify
             // 
@@ -790,6 +804,7 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel9.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel9.Controls.Add(this.btnSave, 4, 0);
             this.tableLayoutPanel9.Controls.Add(this.btn_Modify, 0, 0);
+            this.tableLayoutPanel9.Controls.Add(this.btn_Close, 3, 0);
             this.tableLayoutPanel9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel9.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel9.Name = "tableLayoutPanel9";
@@ -797,6 +812,37 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel9.Size = new System.Drawing.Size(677, 46);
             this.tableLayoutPanel9.TabIndex = 0;
+            // 
+            // btn_Close
+            // 
+            this.btn_Close.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btn_Close.Location = new System.Drawing.Point(408, 3);
+            this.btn_Close.Name = "btn_Close";
+            this.btn_Close.Size = new System.Drawing.Size(129, 40);
+            this.btn_Close.TabIndex = 7;
+            this.btn_Close.Tag = "Close";
+            this.btn_Close.Text = "Setup Close";
+            this.btn_Close.UseVisualStyleBackColor = true;
+            this.btn_Close.Click += new System.EventHandler(this.button_Click);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label18.Location = new System.Drawing.Point(3, 30);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(103, 30);
+            this.label18.TabIndex = 3;
+            this.label18.Text = "Event Log Folder :";
+            this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_EventLogPath
+            // 
+            this.tb_EventLogPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_EventLogPath.Location = new System.Drawing.Point(112, 35);
+            this.tb_EventLogPath.Name = "tb_EventLogPath";
+            this.tb_EventLogPath.Size = new System.Drawing.Size(298, 20);
+            this.tb_EventLogPath.TabIndex = 1;
             // 
             // PlcSetupWindow
             // 
@@ -812,15 +858,15 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel2.PerformLayout();
             this.tabctrl_PlcType.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
             this.tableLayoutPanel3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel5.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.tableLayoutPanel6.ResumeLayout(false);
             this.tableLayoutPanel6.PerformLayout();
@@ -830,6 +876,8 @@ namespace AISIN_WFA.GUI
             this.groupBox6.ResumeLayout(false);
             this.tableLayoutPanel8.ResumeLayout(false);
             this.tableLayoutPanel8.PerformLayout();
+            this.tableLayoutPanel10.ResumeLayout(false);
+            this.tableLayoutPanel10.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -892,11 +940,14 @@ namespace AISIN_WFA.GUI
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel8;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox tbLogFilesFolder;
-        private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Button btn_Modify;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel9;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel10;
+        private System.Windows.Forms.CheckBox ckb_RailLog;
+        private System.Windows.Forms.Button btn_Close;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox tb_EventLogPath;
     }
 }

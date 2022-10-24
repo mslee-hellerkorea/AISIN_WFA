@@ -57,7 +57,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "1.20";
+        private string revision = "v1.1.0.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -75,10 +75,6 @@ namespace AISIN_WFA
 
         // PLC Data and State
         private bool plcCommEnable;
-        private bool UpstreamMxPlcCommEnable;
-        private bool DownstreamMxPlcCommEnable;
-        private int upstreamPlcDisConnectCount = 0;
-        private int downstreamPlcDisConnectCount = 0;
         private int[] plcInputData;
         private int[] plcOutputData;
         private byte[] barcodeData;
@@ -104,7 +100,7 @@ namespace AISIN_WFA
         private string barcodeFromUpLane2;
 
         int defaultRail;
-        bool railLogging;
+        //private bool railLogging;
         bool barcodeRecipeEmptyDisplayed;
         List<float> currentBeltSpeed = null;
         List<float> currentBeltWidth = null;
@@ -138,10 +134,16 @@ namespace AISIN_WFA
 
             LoadConfigurationSettings();
             InitializeMembers();
-            if (InitializeControl())
-                InitializePLC();
 
-            //InitializeOCX();
+            if (InitializeControl()) 
+            {
+                // if Hc2 ocx is disconnect, not allow operate any actions.
+                InitializePLC();
+            }
+            else
+            {
+               MessageBox.Show("Not able to connect with HC2, please start after oven software execute.", "HC2 Connection fail", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
 
         #region [Initialize]
@@ -204,7 +206,8 @@ namespace AISIN_WFA
             {
                 ocx = new OcxWrappercs();
                 ChannelInfo.GetChannelInfo();
-                ocx.UpdateUI += UpdatingValuesOcx;
+                ocx.UpdateUiEventHandler += UpdatingValuesOcx;
+                ocx.UpdateHc2ConnectEventHandler += UpdatingHc2State;
                 isConnect = ocx.InitWrapper();
 
                 // hold smema for all lanes
@@ -269,10 +272,8 @@ namespace AISIN_WFA
                             UpstreamMxPlc = new MxWrapper(UpStation);
                             DownstreamMxPlc = new MxWrapper(DownStation);
 
-
-                            UpstreamMxPlcCommEnable = UpstreamMxPlc.BConnected;
-                            DownstreamMxPlcCommEnable = DownstreamMxPlc.BConnected;
-
+                            UpstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
+                            DownstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
                             UpDownstreamThread();
                         }
                         break;
@@ -284,6 +285,18 @@ namespace AISIN_WFA
             {
                 HLog.log(HLog.eLog.EXCEPTION, $"InitializePLC - {ex.Message}");
                 MessageBox.Show(ex.Message, "EXCEPTION");
+            }
+        }
+
+        private void MxPlc_UpdateMxConnectionStateEventHandler(int station)
+        {
+            try
+            {
+                UpdatingUpDownPlcState();
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpstreamMxPlc_UpdateMxConnectionStateEventHandler - {ex.Message}");
             }
         }
 
@@ -331,9 +344,9 @@ namespace AISIN_WFA
                 globalParameter.holdSmemaUntilBarcode = UseConfigFile.GetBoolConfigurationSetting("HoldSmemaBarcode", globalParameter.holdSmemaUntilBarcode);
 
                 // LogFilePath
-                string logfilePath = globalParameter.LogFilePath;
-                logfilePath = UseConfigFile.GetStringConfigurationSetting("LogFilePath", logfilePath);
-                globalParameter.LogFilePath = logfilePath;
+                globalParameter.LogFilePath = UseConfigFile.GetStringConfigurationSetting("LogFilePath", globalParameter.LogFilePath);
+                HLog.LogTracePath = globalParameter.LogFilePath;
+                globalParameter.debugLogFolder = UseConfigFile.GetStringConfigurationSetting("debugLogFolder", globalParameter.debugLogFolder);
 
                 // PLCType
                 string plcType = globalParameter.PLCType.ToString();
@@ -410,7 +423,6 @@ namespace AISIN_WFA
             //while (true)
             while (RunFlag)
             {
-
                 switch (globalParameter.PLCType)
                 {
                     case globalParameter.ePLCType.None:
@@ -604,8 +616,6 @@ namespace AISIN_WFA
 
                                     try
                                     {
-
-
                                         // Read PLC data
                                         // MxPlcBarcodeDataLane1
                                         // MxPlcBarcodeDataLane2
@@ -647,25 +657,22 @@ namespace AISIN_WFA
 
                             if (!UpstreamMxPlc.IsOnline())
                             {
-                                upstreamPlcDisConnectCount++;
-                                if (upstreamPlcDisConnectCount > 5)
+                                if (UpstreamMxPlc.IsRetryFail)
                                 {
+                                    HLog.log(HLog.eLog.ERROR, "Mitsubishi Upstream MX Component disconnected");
                                     MessageBox.Show("Mitsubishi Upstream MX Component disconnected, Please check the PLC connection state");
+                                    if (UpstreamMxPlc != null)
+                                    {
+                                        UpstreamMxPlc = null;
+                                    }
                                     return;
                                 }
-                            }
-                            else
-                            {
-                                upstreamPlcDisConnectCount = 0;
                             }
                         }
                         break;
                     default:
                         break;
                 }
-
-
-
                 // snooze
                 Thread.Sleep(globalParameter.UpstreamPLCPeriod);
             }
@@ -824,16 +831,16 @@ namespace AISIN_WFA
 
                             if (!DownstreamMxPlc.IsOnline())
                             {
-                                downstreamPlcDisConnectCount++;
-                                if (downstreamPlcDisConnectCount > 5)
+                                if (DownstreamMxPlc.IsRetryFail)
                                 {
+                                    HLog.log(HLog.eLog.ERROR, "Mitsubishi Downstream MX Component disconnected");
                                     MessageBox.Show("Mitsubishi Downstream MX Component disconnected, Please check the PLC connection state");
+                                    if (DownstreamMxPlc != null)
+                                    {
+                                        DownstreamMxPlc = null;
+                                    }
                                     return;
                                 }
-                            }
-                            else
-                            {
-                                downstreamPlcDisConnectCount = 0;
                             }
                         }
                         break;
@@ -1267,7 +1274,7 @@ namespace AISIN_WFA
                             if (flane2 > 0)
                             {
                                 ilane2 = BCDConverter(flane2);
-                                LogWrite("Fill rail1 width: " + flane2);
+                                LogWrite("Fill rail2 width: " + flane2);
                             }
 
                             int returnCode = DownstreamMxPlc.WriteDeviceBlockInt(addrLane2, 1, ref ilane2);
@@ -1402,11 +1409,59 @@ namespace AISIN_WFA
                     tbBelt4InOven.Text = ocx.Oven.InOvenCount[3].ToString();
 
                     tbLightTowerColor.Text = ocx.Oven.LighTower;
+
+
                 }
                 catch (Exception ex)
                 {
                     HLog.log(HLog.eLog.EXCEPTION, $"UpdatingValues - {ex.Message}");
                 }
+            }
+        }
+
+        public void UpdatingHc2State()
+        {
+            try
+            {
+                if (InvokeRequired) this.Invoke(new MethodInvoker(() => UpdatingHc2State()));
+                else
+                {
+                    tb_Hc2state.Text = ocx.Oven.IsConnectWithHC2 ? "Connect" : "Disconnect";
+                    tb_Hc2state.BackColor = ocx.Oven.IsConnectWithHC2 ? System.Drawing.Color.Lime : System.Drawing.Color.Yellow;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpdatingHc2State - {ex.Message}");
+            }
+        }
+
+        public void UpdatingUpDownPlcState()
+        {
+            try
+            {
+                if (InvokeRequired) this.Invoke(new MethodInvoker(() => UpdatingUpDownPlcState()));
+                else
+                {
+                    if (UpstreamMxPlc != null)
+                    {
+                        tb_UpPlcConnState.Text = UpstreamMxPlc.BConnected ? "Connect" : "Disconnect";
+                        tb_UpPlcConnState.BackColor = UpstreamMxPlc.BConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Yellow;
+                        tb_upRetryCount.Text = UpstreamMxPlc.RetryConnectCount.ToString();
+                    }
+
+                    if (DownstreamMxPlc != null)
+                    {
+                        tb_DnPlcConnState.Text = DownstreamMxPlc.BConnected ? "Connect" : "Disconnect";
+                        tb_DnPlcConnState.BackColor = DownstreamMxPlc.BConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Yellow;
+                        tb_dnRetryCount.Text = DownstreamMxPlc.RetryConnectCount.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"UpdatingHc2State - {ex.Message}");
             }
         }
 
@@ -1565,6 +1620,7 @@ namespace AISIN_WFA
                 HLog.log(HLog.eLog.EXCEPTION, $"UpdateBarcodeString - {ex.Message}");
             }
         }
+
         private void UpdateBarcodeMxString()
         {
             try
@@ -1639,8 +1695,9 @@ namespace AISIN_WFA
                 // 1.07 revision,  trim barcode before using it for changing recipe or speed or length.
                 barcode = barcode.Trim().Replace(" ", "");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 // ignor - display only.
                 return string.Empty;
             }
@@ -2038,10 +2095,18 @@ namespace AISIN_WFA
         /// <param name="hold">0 means hold, 1 means release</param>
         private void SmemaLaneHold(int lane, int hold)
         {
+            // In case of TCO (Front PC Lane#1 / Rear PC Lane#1)
+            // > Need to Modify Mx Component address for Rear PC.
+            // [Front PC - Lane#1] D0 / D21
+            // [Rear PC - Lane#1] D100 / D121
+
+            // In case of Dual Lane(Front Lane#1 / Rear Lane#2)
+            // > Should be set Lane1 for front lane,
+            // > And should be set Lane2 for rear lane.
+            // [Front Lane#1] D0 / D21
+            // [Rear Lane#1] D100 / D121
+
             ocx.SetSmema(lane, hold);
-            //ocxMutex.WaitOne();
-            //obj.SMEMA_SetLaneHold((uint)lane, hold);
-            //ocxMutex.ReleaseMutex();
         }
 
         public string GetCurrentRecipeName()
@@ -2221,9 +2286,10 @@ namespace AISIN_WFA
         private void btnSelectPort_Click(object sender, EventArgs e)
         {
             BarcodeReaderConfiguration brc = new BarcodeReaderConfiguration();
+            int baudRate = brc.bitRate; 
             brc.ShowDialog();
             if (brc.result == 1)
-                MessageBox.Show("BitRate=" + brc.bitRate.ToString() + " DataBits=" + brc.dataBits);
+                MessageBox.Show("BitRate=" + baudRate.ToString() + " DataBits=" + brc.dataBits);
             else
                 MessageBox.Show("Cancel");
         }
@@ -2352,6 +2418,8 @@ namespace AISIN_WFA
 #if true
                 RunFlag = false;
 
+                Task.Factory.StartNew(() => { forceTerminate(); });
+
                 if (updateThread != null)
                     updateThread.Join();
 
@@ -2382,6 +2450,9 @@ namespace AISIN_WFA
                             //dotUtlType1.Close();
                             if (UpstreamMxPlc != null)
                                 UpstreamMxPlc.Close();
+
+                            if (DownstreamMxPlc != null)
+                                DownstreamMxPlc.Close();
                         }
                         break;
                     default:
@@ -2401,6 +2472,62 @@ namespace AISIN_WFA
                 }
                 Environment.Exit(0);
             }
+        }
+
+        int threadJoinCount = 0;
+        private void forceTerminate()
+        {
+            while (15 > threadJoinCount)
+            {
+                threadJoinCount++;
+                Thread.Sleep(100);
+            }
+
+            try
+            {
+                if (updateThread != null)
+                    updateThread.Abort();
+
+                if (upstreamThread != null)
+                    upstreamThread.Abort();
+
+                if (upstreamThread != null)
+                    upstreamThread.Abort();
+
+                closeOK = true;
+
+                switch (globalParameter.PLCType)
+                {
+                    case globalParameter.ePLCType.None:
+                        break;
+                    case globalParameter.ePLCType.OMRON:
+                        break;
+                    case globalParameter.ePLCType.Mitsubishi:
+                        {
+                            //dotUtlType1.Close();
+                            if (UpstreamMxPlc != null)
+                                UpstreamMxPlc.Close();
+
+                            if (DownstreamMxPlc != null)
+                                DownstreamMxPlc.Close();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                // release smema before quit software
+                for (int i = 0; i < 2; i++)
+                {
+                    SmemaLaneHold(i, 0);
+                }
+                Environment.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"forceTerminate - {ex.Message}");
+            }
+
         }
 
         //---------------------------------------------------------------------
@@ -2641,21 +2768,21 @@ namespace AISIN_WFA
         AxHELLERCOMMLib.AxHellerComm obj;
         // private AxActProgTypeLib.AxActProgType axActProgType1;
         // private DotUtlType dotUtlType1;
-        Thread waitForOvenEmptyToLoadRecipe = null;
+        // Thread waitForOvenEmptyToLoadRecipe = null;
         const String configurationKey = "HKEY_LOCAL_MACHINE\\Software\\Heller Industries\\HC2\\BarcodeReader";
         Mutex ocxMutex;
         Thread updateThread;
         int updatePeriod;
         int upstreamPLCPeriod;
         int downstreamPLCPeriod;
-        byte[] tcpMsgData;
-        Socket barcodeSocket;
-        Boolean barcodeSocketConnected;
-        String upstreamPLCTag;
-        String downstreamPLCTag;
-        String logFilesFolder;
-        String barcodeSocketIP;
-        String tagIP;
+        //byte[] tcpMsgData;
+        //Socket barcodeSocket;
+        //Boolean barcodeSocketConnected;
+        //String upstreamPLCTag;
+        //String downstreamPLCTag;
+        //String logFilesFolder;
+        //String barcodeSocketIP;
+        //String tagIP;
         int barcodeSocketPort;
         private bool[] CBSExisit = new bool[] { false, false };
 
@@ -2940,7 +3067,7 @@ namespace AISIN_WFA
             Array.Clear(lane2BarcodeByte, 0, BARCODE_MAX);
 
             // initialize booleans
-            barcodeSocketConnected = false;
+            // barcodeSocketConnected = false;
             BASignal = false;
             plcCommEnable = true;
             closeOK = false;
@@ -3000,63 +3127,69 @@ namespace AISIN_WFA
             {
                 barcodeSocketPort = (int)Registry.GetValue(configurationKey, "Port", 31000);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 barcodeSocketPort = 31000;
             }
             try
             {
                 updatePeriod = (int)Registry.GetValue(configurationKey, "UpdatePeriod", 2000);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 updatePeriod = 2000;
             }
             try
             {
                 upstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "UpstreamPLCPeriod", 1000);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 upstreamPLCPeriod = 1000;
             }
             try
             {
                 downstreamPLCPeriod = (int)Registry.GetValue(configurationKey, "DownstreamPLCPeriod", 1000);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 downstreamPLCPeriod = 1000;
             }
             try
             {
                 defaultRail = (int)Registry.GetValue(configurationKey, "DefaultRail", 0);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
                 defaultRail = 0;
             }
             try
             {
-                string strLog = (string)Registry.GetValue(configurationKey, "RailLogging", "false");
-                switch (strLog)
-                {
-                    case "true":
-                        railLogging = true;
-                        break;
-                    case "false":
-                        railLogging = false;
-                        break;
-                    default:
-                        railLogging = false;
-                        break;
-                }
+                //string strLog = (string)Registry.GetValue(configurationKey, "RailLogging", "false");
+                //switch (strLog)
+                //{
+                //    case "true":
+                //        railLogging = true;
+                //        break;
+                //    case "false":
+                //        railLogging = false;
+                //        break;
+                //    default:
+                //        railLogging = false;
+                //        break;
+                //}
 
                 //railLogging = (Boolean)Registry.GetValue(configurationKey, "RailLogging", false);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                railLogging = false;
+                HLog.log(HLog.eLog.EXCEPTION, ex.Message);
+                //railLogging = false;
             }
 
             //switch (defaultRail)
@@ -3162,12 +3295,12 @@ namespace AISIN_WFA
 
         private void NotificationEvent(object sender, AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEvent e)
         {
-            int iResult = 0;
-            float fResult = 0.0F;
-            string sResult = null;
+            //int iResult = 0;
+            //float fResult = 0.0F;
+            // string sResult = null;
             int[] iArg = new int[3];        //1.0.82 extend 2 -> 3 
             string[] sArg = new string[1];
-            int lane;
+            // int lane;
 
             // switch on type of notification
             switch (e.lEventID)

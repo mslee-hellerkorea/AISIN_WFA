@@ -73,10 +73,16 @@ namespace AISIN_WFA.GUI
                 tb_Lane1RailWidthAddr.Text = globalParameter.AddrMxRailWidthLane1.ToString();
                 tb_Lane2RailWidthAddr.Text = globalParameter.AddrMxRailWidthLane2.ToString();
 
+                tbUpstreamPLCTag.Text = globalParameter.UpstreamPLCTag;
+                tbDownstreamPLCTag.Text = globalParameter.DownstreamPLCTag;
+                tbTagIP.Text = globalParameter.TagIP;
+
                 cb_Lane1Enable.Text = globalParameter.UpstreamEnableLane1.ToString();
                 cb_Lane2Enable.Text = globalParameter.UpstreamEnableLane2.ToString();
 
                 tbLogFilesFolder.Text = globalParameter.LogFilePath;
+                tb_EventLogPath.Text = globalParameter.debugLogFolder;
+                ckb_RailLog.Checked = globalParameter.RailLogging ? true : false;
 
             }
             catch (Exception ex)
@@ -108,6 +114,9 @@ namespace AISIN_WFA.GUI
                             tableLayoutPanel1.Enabled = false;
                             btn_Modify.Text = "Modify";
                         }
+                        break;
+                    case "Close":
+                        this.Close();
                         break;
                     default:
                         break;
@@ -173,6 +182,11 @@ namespace AISIN_WFA.GUI
                     UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
 
+                    // Omron Address
+                    globalParameter.UpstreamPLCTag = tbUpstreamPLCTag.Text;
+                    globalParameter.DownstreamPLCTag = tbDownstreamPLCTag.Text;
+                    globalParameter.TagIP = tbTagIP.Text;
+
                     // Lane Enable
                     globalParameter.UpstreamEnableLane1 = cb_Lane1Enable.Text == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
                     globalParameter.UpstreamEnableLane2 = cb_Lane2Enable.Text == "Enable" ? globalParameter.eUpstreamUse.Enable : globalParameter.eUpstreamUse.Disable;
@@ -193,6 +207,8 @@ namespace AISIN_WFA.GUI
 
                     // General Setup
                     UseConfigFile.SetStringConfigurationSetting("LogFilePath", tbLogFilesFolder.Text);
+                    UseConfigFile.SetStringConfigurationSetting("debugLogFolder", tb_EventLogPath.Text);
+                    globalParameter.RailLogging = ckb_RailLog.Checked ? true : false;
                     UseConfigFile.SetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
                     MessageBox.Show("Saved config file. Please restart this application to apply changes.");
                 }

@@ -30,7 +30,7 @@ namespace AISIN_WFA.Utility
         #endregion
 
         public static string StartupPath = @"C:\TEST";
-        public static string LogTracePath = @"C:\TRACE\Reflow\";
+        public static string LogTracePath { get; set; } = @"C:\TRACE\Reflow\";
         private const int mutexWait = 100; // milliseconds to wait for access to file
 
         public enum eLog
@@ -189,7 +189,7 @@ namespace AISIN_WFA.Utility
                     }
 
                     // 20220917_104628_70902209173727011.log
-                    string path = LogTracePath + PREFIX_TRACE + DateTime.Now.ToString("yyyyMMdd") + "_" + 
+                    string path = LogTracePath + "\\" + PREFIX_TRACE + DateTime.Now.ToString("yyyyMMdd") + "_" + 
                         DateTime.Now.ToString("hhmmss") + "_" + bcr + SUFFIX_TRACE;
 
                     bool exists = File.Exists(path);

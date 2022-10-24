@@ -21,5 +21,6 @@ namespace AISIN_WFA.Models
         public float[] BottomZoneTemperaturePV { get; set; } = new float[50];
         public float[] ZoneTemperatureSP { get; set; } = new float[100];
         public float[] OxgenPPM { get; set; } = new float[] { 0, 0, 0 };
+        public bool IsConnectWithHC2 { get; set; } = false;
     }
 }

@@ -21,7 +21,8 @@ namespace AISIN_WFA.Models
         private bool IsIntialSPUpdateFinished = false;
         private object variant = new object();
         public OvenState Oven = new OvenState();
-        public event OcxUIupdate UpdateUI;
+        public event OcxUIupdate UpdateUiEventHandler;
+        public event OcxUIupdate UpdateHc2ConnectEventHandler;
         public string Lane1Barcode { get; set; } = string.Empty;
         public string Lane2Barcode { get; set; } = string.Empty;
         #endregion
@@ -108,7 +109,24 @@ namespace AISIN_WFA.Models
 
         private bool CheckOvenAlive()
         {
-            int handle = Util.FindWindow("CHellerMainFrame", null);
+            int handle = 0;
+            handle = Util.FindWindow("CHellerMainFrame", null);
+            if (handle != 0)
+            {
+                if (Oven.IsConnectWithHC2 != true)
+                {
+                    Oven.IsConnectWithHC2 = true;
+                    UpdateHc2ConnectEventHandler.BeginInvoke(null, null);
+                }
+            }
+            else
+            {
+                if (Oven.IsConnectWithHC2 != false)
+                {
+                    Oven.IsConnectWithHC2 = false;
+                    UpdateHc2ConnectEventHandler.BeginInvoke(null, null);
+                }
+            }
             return handle != 0;
         }
         #endregion
@@ -120,7 +138,12 @@ namespace AISIN_WFA.Models
             {
                 try
                 {
-                    if (!CheckOvenAlive()) return;
+                    if (!CheckOvenAlive())
+                    {
+                        Oven.IsConnectWithHC2 = false;
+                        continue;
+                    }
+                    Oven.IsConnectWithHC2 = true;
 
                     // Get Light Tower State
                     Oven.LighTower = GetCurrentLightTowerColor();
@@ -228,7 +251,7 @@ namespace AISIN_WFA.Models
                     // Oxygen
                     Oven.OxgenPPM[0] = GetFurnaceOxygenPPM();
 
-                    UpdateUI?.Invoke();
+                    UpdateUiEventHandler?.Invoke();
                 }
                 catch (Exception ex)
                 {

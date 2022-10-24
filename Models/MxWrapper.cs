@@ -7,17 +7,28 @@ using System.Text;
 
 namespace AISIN_WFA.Models
 {
+    public delegate void MxUpdateToGUI(string msg);
+    public delegate void MxConnectionUpdateToGUI(int station);
     public class MxWrapper
     {
         public int iErrorCode = 0;
         public string sErrorCode = "";
 
-        private int stationNumber = 7;
+        public int StationNumber { get; set; } = 7;
 
         private Object thisLock = new Object();
+        readonly object monObject = new object();
 
         private ActUtlTypeLib.ActUtlType actUtlType = null;
-        readonly object monObject = new object();
+
+
+        private const int MAX_RETRY_COUNT = 10;
+        public int RetryConnectCount { get; set; } = 0;
+        public bool IsRetryFail { get; set; } = false;
+
+
+
+        private short[] sInt = new short[100]; // No more use
 
         private bool bConnected = false;
         public bool BConnected { get => bConnected; }
@@ -28,12 +39,13 @@ namespace AISIN_WFA.Models
 
         public delegate void OnDeviceStatus(string szDevice, int lData, int lReturnCode);
         public event OnDeviceStatus OnDeviceStatusEventHandler;
+        public event MxConnectionUpdateToGUI UpdateMxConnectionStateEventHandler;
 
         public MxWrapper(int station)
         {
             try
             {
-                stationNumber = station;
+                StationNumber = station;
                 actUtlType = new ActUtlTypeLib.ActUtlType();
                 actUtlType.ActLogicalStationNumber = station;
                 actUtlType.Open();
@@ -77,9 +89,26 @@ namespace AISIN_WFA.Models
 
             if (!IsOnline())
             {
-                HLog.log("INFO", String.Format("Start retry open PLC..."));
-                Open(stationNumber);
-                HLog.log("INFO", String.Format("End retry open PLC..."));
+                if (MAX_RETRY_COUNT > RetryConnectCount)
+                {
+                    RetryConnectCount++;
+                    HLog.log("INFO", String.Format("Start retry open PLC..."));
+                    Open(StationNumber);
+                    HLog.log("INFO", String.Format("End retry open PLC..."));
+                    IsRetryFail = false;
+                }
+                else
+                {
+                    IsRetryFail = true;
+                    HLog.log(HLog.eLog.ERROR, $"PLC Station: {StationNumber}, Retry Connect fail...");
+                    Close();
+                    return;
+                }
+            }
+            else
+            {
+                RetryConnectCount = 0;
+                IsRetryFail = true;
             }
 
             timer.Enabled = true;
@@ -89,9 +118,9 @@ namespace AISIN_WFA.Models
         {
             int iRst = -1;
 
-            this.stationNumber = iLogicalStationNumber;
+            this.StationNumber = iLogicalStationNumber;
 
-            actUtlType.ActLogicalStationNumber = this.stationNumber;
+            actUtlType.ActLogicalStationNumber = this.StationNumber;
 
             actUtlType.ActPassword = "";
             HLog.log("INFO", String.Format("retry open PLC..."));
@@ -142,13 +171,9 @@ namespace AISIN_WFA.Models
             return false;
         }
 
-
-        short[] sInt = new short[100];
-
-
         public int Initialization(int iLogicalStationNumber)
         {
-            this.stationNumber = iLogicalStationNumber;
+            this.StationNumber = iLogicalStationNumber;
 
             return 0;
         }
@@ -175,10 +200,15 @@ namespace AISIN_WFA.Models
             if (iRst == 0 && iData == 1)
             {
                 bConnected = true;
+                UpdateMxConnectionStateEventHandler.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
                 return true;
             }
+            else
+            {
+                bConnected = false;
+                UpdateMxConnectionStateEventHandler.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+            }
 
-            bConnected = false;
             return false;
         }
 
