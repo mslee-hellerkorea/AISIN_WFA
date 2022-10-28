@@ -771,8 +771,31 @@ namespace AISIN_WFA.Models
                 case eOCXEventID.ALARM_ACK:
                     break;
                 case eOCXEventID.LIGHT_TOWER_CHANGE:
+                    {
+                        switch (e.lEventData)
+                        {
+                            case 0:
+                                HLog.log(HLog.eLog.EVENT, $"Light Tower Change to [{e.lEventData}] [Off]");
+                                break;
+                            case 1:
+                                HLog.log(HLog.eLog.EVENT, $"Light Tower Change to [{e.lEventData}] [Red]");
+                                break;
+                            case 2:
+                                HLog.log(HLog.eLog.EVENT, $"Light Tower Change to [{e.lEventData}] [Amber]");
+                                break;
+                            case 4:
+                                HLog.log(HLog.eLog.EVENT, $"Light Tower Change to [{e.lEventData}] [Green]");
+                                break;
+                            default:
+                                HLog.log(HLog.eLog.EVENT, $"Light Tower Change to [{e.lEventData}] [Unknown]");
+                                break;
+                        }
+                    }
                     break;
                 case eOCXEventID.JOB_CHANGE:
+                    {
+                        HLog.log(HLog.eLog.EVENT, $"Start Job Change to [{GetRecipePath()}]");
+                    }
                     break;
                 case eOCXEventID.HEAT_SP_CHANGE:
                     if (e.lEventData == 64)
@@ -847,12 +870,12 @@ namespace AISIN_WFA.Models
 
         private void BoardEntered(int laneID, int serialID)
         {
-            // TODO
+            HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)laneID}] [Board Entry]");
         }
 
         private void BoardExited(int laneID, int serialID)
         {
-            // TODO
+            HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)laneID}] [Board Exit]");
         }
 
         private void OCXWrapper_UpdateChannelParam(object sender, AxHELLERCOMMLib._DHellerCommEvents_UpdateChannelParamEvent e)

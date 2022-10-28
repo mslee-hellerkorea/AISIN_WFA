@@ -32,15 +32,15 @@ namespace AISIN_WFA.GUI
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BarcodeMappingTable));
             this.label1 = new System.Windows.Forms.Label();
             this.recipe_table = new System.Windows.Forms.DataGridView();
+            this.Barcode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Recipe = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Belt_width = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Belt_speed = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.Barcode = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Recipe = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Belt_width = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Belt_speed = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.recipe_table)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,12 +67,34 @@ namespace AISIN_WFA.GUI
             this.Belt_speed});
             this.recipe_table.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.recipe_table.Location = new System.Drawing.Point(9, 42);
-            this.recipe_table.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.recipe_table.Margin = new System.Windows.Forms.Padding(2);
             this.recipe_table.Name = "recipe_table";
             this.recipe_table.RowTemplate.Height = 28;
             this.recipe_table.Size = new System.Drawing.Size(709, 149);
             this.recipe_table.TabIndex = 23;
             this.recipe_table.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.recipe_table_CellMouseDown);
+            this.recipe_table.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridView1_EditingControlShowing);
+            // 
+            // Barcode
+            // 
+            this.Barcode.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Barcode.HeaderText = "Barcode Pattern";
+            this.Barcode.Name = "Barcode";
+            // 
+            // Recipe
+            // 
+            this.Recipe.HeaderText = "Recipe";
+            this.Recipe.Name = "Recipe";
+            // 
+            // Belt_width
+            // 
+            this.Belt_width.HeaderText = "Rail Width (mm)";
+            this.Belt_width.Name = "Belt_width";
+            // 
+            // Belt_speed
+            // 
+            this.Belt_speed.HeaderText = "Belt Speed (mm/min)";
+            this.Belt_speed.Name = "Belt_speed";
             // 
             // label5
             // 
@@ -120,34 +142,13 @@ namespace AISIN_WFA.GUI
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(653, 333);
-            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(65, 26);
             this.button1.TabIndex = 32;
             this.button1.Text = "Save";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // Barcode
-            // 
-            this.Barcode.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Barcode.HeaderText = "Barcode Pattern";
-            this.Barcode.Name = "Barcode";
-            // 
-            // Recipe
-            // 
-            this.Recipe.HeaderText = "Recipe";
-            this.Recipe.Name = "Recipe";
-            // 
-            // Belt_width
-            // 
-            this.Belt_width.HeaderText = "Rail Width (mm)";
-            this.Belt_width.Name = "Belt_width";
-            // 
-            // Belt_speed
-            // 
-            this.Belt_speed.HeaderText = "Belt Speed (mm/min)";
-            this.Belt_speed.Name = "Belt_speed";
             // 
             // BarcodeMappingTable
             // 
@@ -162,7 +163,7 @@ namespace AISIN_WFA.GUI
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.recipe_table);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "BarcodeMappingTable";
             this.Text = "BarcodeMappingTable";
             ((System.ComponentModel.ISupportInitialize)(this.recipe_table)).EndInit();

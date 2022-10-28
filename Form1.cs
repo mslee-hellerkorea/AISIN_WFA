@@ -88,6 +88,8 @@ namespace AISIN_WFA
         private bool BASignal;
         private bool BASignalLane1;
         private bool BASignalLane2;
+        private bool LastUpstreamConnectedState = false;
+        private bool LastDownstreamConnectedState = false;
         private bool closeOK;
 
         private byte[] lane1BarcodeData;
@@ -132,6 +134,7 @@ namespace AISIN_WFA
             // add form closing
             this.FormClosing += new FormClosingEventHandler(MainForm_Closing);
 
+            HLog.log(HLog.eLog.EVENT, $"Loading Main form... [Version: {revision}]");
             LoadConfigurationSettings();
             InitializeMembers();
 
@@ -142,7 +145,8 @@ namespace AISIN_WFA
             }
             else
             {
-               MessageBox.Show("Not able to connect with HC2, please start after oven software execute.", "HC2 Connection fail", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                HLog.log(HLog.eLog.EVENT, $"Not able to connect with HC2, please start after oven software execute.");
+                MessageBox.Show("Not able to connect with HC2, please start after oven software execute.", "HC2 Connection fail", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -191,6 +195,8 @@ namespace AISIN_WFA
 
                 // initialize mutex
                 plcMutex = new Mutex();
+
+                HLog.log(HLog.eLog.EVENT, "InitializeMembers()");
             }
             catch (Exception ex)
             {
@@ -210,12 +216,15 @@ namespace AISIN_WFA
                 ocx.UpdateHc2ConnectEventHandler += UpdatingHc2State;
                 isConnect = ocx.InitWrapper();
 
+                HLog.log(HLog.eLog.EVENT, $"InitializeControl()[Create OCX Wrapper]");
+
                 // hold smema for all lanes
                 if (globalParameter.holdSmemaUntilBarcode)
                 {
                     for (int i = 0; i < 2; i++)
                     {
                         SmemaLaneHold(i, 1);
+                        HLog.log(HLog.eLog.EVENT, $"InitializeControl()[SmemaLaneHold: {(globalParameter.eLane)i}: hold]");
                     }
                 }
                 else
@@ -223,6 +232,7 @@ namespace AISIN_WFA
                     for (int i = 0; i < 2; i++)
                     {
                         SmemaLaneHold(i, 0);
+                        HLog.log(HLog.eLog.EVENT, $"InitializeControl()[SmemaLaneHold: {(globalParameter.eLane)i}: Release]");
                     }
                 }
             }
@@ -244,10 +254,12 @@ namespace AISIN_WFA
                     case globalParameter.ePLCType.None:
                         {
                             MessageBox.Show("Please setup to PLC Type");
+                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[PLC Type: None]");
                         }
                         break;
                     case globalParameter.ePLCType.OMRON:
                         {
+                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[PLC Type: OMRON]");
                             this.components = new System.ComponentModel.Container();
                             compolet = new OMRON.Compolet.CIP.CJ2Compolet(this.components);
                             compolet.Active = true;
@@ -258,14 +270,16 @@ namespace AISIN_WFA
                             compolet.RoutePath = "";
                             compolet.UseRoutePath = false;
                             compolet.OnHeartBeatTimer += new System.EventHandler(this.compolet_OnHeartBeatTimer);
-
+                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[Created: OMRON-compolet]");
                             plcCommEnable = true;
                             //start downstream PLC thread
+                            
                             UpDownstreamThread();
                         }
                         break;
                     case globalParameter.ePLCType.Mitsubishi:
                         {
+                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[PLC Type: Mitsubishi]");
                             int UpStation = globalParameter.UpstreamMxPlcStation;
                             int DownStation = globalParameter.DownstreamMxPlcStation;
 
@@ -274,6 +288,7 @@ namespace AISIN_WFA
 
                             UpstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
                             DownstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
+                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[Created: Mitsubishi-Mx Components]");
                             UpDownstreamThread();
                         }
                         break;
@@ -304,6 +319,7 @@ namespace AISIN_WFA
         {
             try
             {
+                HLog.log(HLog.eLog.EVENT, $"LoadConfigurationSettings()[Start read Configuraiton]");
                 // --------------------------------------------
                 // Get from app.config
                 // --------------------------------------------
@@ -356,13 +372,19 @@ namespace AISIN_WFA
                 {
                     case "OMRON":
                         globalParameter.PLCType = globalParameter.ePLCType.OMRON;
+                        tlp_downstream.Visible = false;
+                        tlp_Upstream.Visible = false;
                         break;
                     case "Mitsubishi":
                         globalParameter.PLCType = globalParameter.ePLCType.Mitsubishi;
+                        tlp_downstream.Visible = true;
+                        tlp_Upstream.Visible = true;
                         btnStartComm.Visible = false;
                         break;
                     default:
                         globalParameter.PLCType = globalParameter.ePLCType.None;
+                        tlp_downstream.Visible = false;
+                        tlp_Upstream.Visible = false;
                         break;
                 }
 
@@ -392,7 +414,7 @@ namespace AISIN_WFA
 
                 // Lane2EHC
                 globalParameter.Lane2Rail = UseConfigFile.GetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
-
+                HLog.log(HLog.eLog.EVENT, $"LoadConfigurationSettings()[Completed read Configuraiton]");
             }
             catch (Exception ex)
             {
@@ -420,6 +442,7 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void UpstreamThread()
         {
+            HLog.log(HLog.eLog.EVENT, $"UpstreamThread()[Start UpstreamThread]");
             //while (true)
             while (RunFlag)
             {
@@ -652,6 +675,7 @@ namespace AISIN_WFA
                                 catch (Exception ex)
                                 {
                                     LogWrite(ex.Message);
+                                    HLog.log(HLog.eLog.EXCEPTION, $"UpstreamThread exception during UpdateBarcodeMxString - {ex.Message}");
                                 }
                             }
 
@@ -676,6 +700,7 @@ namespace AISIN_WFA
                 // snooze
                 Thread.Sleep(globalParameter.UpstreamPLCPeriod);
             }
+            HLog.log(HLog.eLog.EVENT, $"UpstreamThread()[Stop UpstreamThread]");
         }
 
         //---------------------------------------------------------------------
@@ -683,6 +708,7 @@ namespace AISIN_WFA
         //---------------------------------------------------------------------
         private void DownstreamThread()
         {
+            HLog.log(HLog.eLog.EVENT, $"DownstreamThread()[Start DownstreamThread]");
             //while (true)
             while (RunFlag)
             {
@@ -851,10 +877,13 @@ namespace AISIN_WFA
                 // snooze
                 Thread.Sleep(globalParameter.DownstreamPLCPeriod);
             }
+
+            HLog.log(HLog.eLog.EVENT, $"DownstreamThread()[Stop DownstreamThread]");
         }
 
         private void UpDownstreamThread()
         {
+            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[Start UpDownstreamThread]");
             downstreamThread = new Thread(new ThreadStart(DownstreamThread));
             downstreamThread.Start();
 
@@ -866,19 +895,6 @@ namespace AISIN_WFA
         #endregion
 
         #region [Local Function]
-
-        private void checkMxPlcConnection()
-        {
-            try
-            {
-                //if (UpstreamMxPlc != null)
-                //   c UpstreamMxPlc.BConnected;
-            }
-            catch (Exception ex)
-            {
-                HLog.log(HLog.eLog.EXCEPTION, $" checkMxPlcConnection : { ex.Message}");
-            }
-        }
 
         private void UpstreamBarcodeOperation(globalParameter.eLane lane)
         {
@@ -901,26 +917,35 @@ namespace AISIN_WFA
                             // test BA signal transition from OFF to ON
                             if (BASignalLane1 == false && (MxPlcBaSignalLane1 != 0))    // daniel modified,  remove barcode socket check.
                             {
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BA: {BASignalLane1}] [PLC BA: {MxPlcBaSignalLane1}]");
                                 // copy barcode to tcp message buffer
                                 // Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
                                 LogWrite("Clear barcode array");
                                 Array.Clear(lane1BarcodeData, 0, TCP_MSG_MAX);
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [Array.Clear - lane1BarcodeData]");
 
                                 // Line1 Barcode
                                 lane1BarcodeData = BarcodeDataIntToByte(globalParameter.eEndian.LittleEndian, MxPlcBarcodeDataLane1); // Mitsubishi use Litte endian
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BarcodeDataIntToByte[0]: {lane1BarcodeData[0]}]");
 
                                 // deal with this barcode
                                 if (lane1BarcodeData[0] != 0)
                                 {
                                     barcodeFromUpLane1 = BarcodeByteToString(lane1BarcodeData);
                                     LogWrite("Acquired barcode for lane1: " + barcodeFromUpLane1);
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BarcodeByteToString: {barcodeFromUpLane1}]");
+
                                     UpdatingValues("tbBarcodeLane1", barcodeFromUpLane1);
                                     ocx.Lane1Barcode = barcodeFromUpLane1.Replace("\0", "");
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [Trace Log Barcode Number {ocx.Lane1Barcode}]");
                                 }
 
                                 // do nothing if hold smema until barcode scan is not enabled.
                                 if (!globalParameter.holdSmemaUntilBarcode)
+                                {
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [holdSmemaUntilBarcode disabled]");
                                     return;
+                                }
 
                                 if (!globalParameter.autoChangeRecipeWidthSpeed)
                                 {
@@ -929,6 +954,7 @@ namespace AISIN_WFA
                                     {
                                         LogWrite("Auto load recipe not enabled, release smema for line1.");
                                         SmemaLaneHold(0, 0);
+                                        HLog.log(HLog.eLog.EVENT, $"{(globalParameter.eLane)lane} UpstreamBarcodeOperation [autoChangeRecipeWidthSpeed disabled] [SMEMA - Release]");
                                     }
                                     return;
                                 }
@@ -937,6 +963,7 @@ namespace AISIN_WFA
                                 {
                                     LogWrite("Start to check barcode recipe for lane1");
                                     CheckBarcodeRecipe(0, barcodeFromUpLane1);
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [CheckBarcodeRecipe] [Barcode: {barcodeFromUpLane1}]");
                                 }
 
                                 // flag BA signal true
@@ -957,26 +984,35 @@ namespace AISIN_WFA
                             // test BA signal transition from OFF to ON
                             if (BASignalLane2 == false && (MxPlcBaSignalLane2 != 0))    // daniel modified,  remove barcode socket check.
                             {
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BA: {BASignalLane2}] [PLC BA: {MxPlcBaSignalLane2}]");
                                 // copy barcode to tcp message buffer
                                 // Array.Clear(tcpMsgData, 0, TCP_MSG_MAX);
                                 LogWrite("Clear barcode array");
                                 Array.Clear(lane2BarcodeData, 0, TCP_MSG_MAX);
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [Array.Clear - lane2BarcodeData]");
 
-                                // Line1 Barcode
+                                // Line2 Barcode
                                 lane2BarcodeData = BarcodeDataIntToByte(globalParameter.eEndian.LittleEndian, MxPlcBarcodeDataLane2); // Mitsubishi use Litte endian
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BarcodeDataIntToByte[0]: {lane2BarcodeData[0]}]");
 
                                 // deal with this barcode
                                 if (lane2BarcodeData[0] != 0)
                                 {
                                     barcodeFromUpLane2 = BarcodeByteToString(lane2BarcodeData);
                                     LogWrite("Acquired barcode for lane2: " + barcodeFromUpLane2);
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [BarcodeByteToString: {barcodeFromUpLane2}]");
+
                                     UpdatingValues("tbBarcodeLane2", barcodeFromUpLane2);
                                     ocx.Lane2Barcode = barcodeFromUpLane2.Replace("\0", "");
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [Trace Log Barcode Number: {ocx.Lane2Barcode}]");
                                 }
 
                                 // do nothing if hold smema until barcode scan is not enabled.
                                 if (!globalParameter.holdSmemaUntilBarcode)
+                                {
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [holdSmemaUntilBarcode disabled]");
                                     return;
+                                }
 
                                 if (!globalParameter.autoChangeRecipeWidthSpeed)
                                 {
@@ -985,6 +1021,7 @@ namespace AISIN_WFA
                                     {
                                         LogWrite("Auto load recipe not enabled, release smema for line2.");
                                         SmemaLaneHold(1, 0);
+                                        HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [autoChangeRecipeWidthSpeed disabled] [SMEMA - Release]");
                                     }
                                     return;
                                 }
@@ -993,6 +1030,7 @@ namespace AISIN_WFA
                                 {
                                     LogWrite("Start to check barcode recipe for lane2");
                                     CheckBarcodeRecipe(1, barcodeFromUpLane2);
+                                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] UpstreamBarcodeOperation [Barcode: {barcodeFromUpLane2}]");
                                 }
 
                                 // flag BA signal true
@@ -1449,6 +1487,12 @@ namespace AISIN_WFA
                         tb_UpPlcConnState.Text = UpstreamMxPlc.BConnected ? "Connect" : "Disconnect";
                         tb_UpPlcConnState.BackColor = UpstreamMxPlc.BConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Yellow;
                         tb_upRetryCount.Text = UpstreamMxPlc.RetryConnectCount.ToString();
+
+                        if (LastUpstreamConnectedState != UpstreamMxPlc.BConnected)
+                        {
+                            HLog.log(HLog.eLog.EVENT, $"Upstream Connection Change from {LastUpstreamConnectedState} to {UpstreamMxPlc.BConnected}");
+                        }
+                        LastUpstreamConnectedState = UpstreamMxPlc.BConnected;
                     }
 
                     if (DownstreamMxPlc != null)
@@ -1456,6 +1500,12 @@ namespace AISIN_WFA
                         tb_DnPlcConnState.Text = DownstreamMxPlc.BConnected ? "Connect" : "Disconnect";
                         tb_DnPlcConnState.BackColor = DownstreamMxPlc.BConnected ? System.Drawing.Color.Lime : System.Drawing.Color.Yellow;
                         tb_dnRetryCount.Text = DownstreamMxPlc.RetryConnectCount.ToString();
+
+                        if (LastDownstreamConnectedState != DownstreamMxPlc.BConnected)
+                        {
+                            HLog.log(HLog.eLog.EVENT, $"Downstream Connection Change from {LastDownstreamConnectedState} to {DownstreamMxPlc.BConnected}");
+                        }
+                        LastDownstreamConnectedState = DownstreamMxPlc.BConnected;
                     }
                 }
             }
@@ -1719,6 +1769,14 @@ namespace AISIN_WFA
                 {
                     barcodeRecipeEmptyDisplayed = true;
                     LogWrite("Barcode mapping list is empty.");
+                    HLog.log(HLog.eLog.ERROR, $"Fail to barcode mappling list [{(globalParameter.eLane)lane}] [Barcode: {barcodeFromUp}]");
+
+                    if (globalParameter.barcodeRecipeList == null)
+                        HLog.log(HLog.eLog.ERROR, $"barcodeRecipeList is null");
+
+                    if (globalParameter.barcodeRecipeList.Count == 0)
+                        HLog.log(HLog.eLog.ERROR, $"barcodeRecipeList count is 0");
+
                     if (MessageBox.Show("Barcode Recipe table is empty, please fill it !", "Barcode error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation) == DialogResult.OK)
                         barcodeRecipeEmptyDisplayed = false;
                 }
@@ -1733,6 +1791,7 @@ namespace AISIN_WFA
                     string currentRecipe = currentJob.ToLower().Replace(".job", "");
                     string barcodeRecipe = bar_rec.recipe.ToLower().Replace(".job", "");
                     LogWrite("current recipe: " + currentRecipe + ", barcode recipe: " + barcodeRecipe);
+                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [Current Recipe:{currentRecipe}] [Barcode Recipe: {barcodeRecipe}]");
                     // if recipe from list matches current job
                     if (currentRecipe.Equals(barcodeRecipe))    //ver1.0.61
                     {
@@ -1740,6 +1799,7 @@ namespace AISIN_WFA
                         LogWrite("barcode from mapping table: " + bar_rec.barcode + ", barcode from upstream: " + barcodeFromUp);
 #if true
                         bool match = RegexLib.IsValidCurrency(barcodeFromUp, bar_rec.barcode);
+                        HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [Match with Current Recipe:{currentRecipe}] [Barcode Recipe: {barcodeRecipe}] [Mappling Table: {bar_rec.barcode}] [Match: {match}]");
 #else
                         bool match = Regex.IsMatch(barcodeFromUp, WildCardToRegular(bar_rec.barcode));
 #endif
@@ -1757,12 +1817,14 @@ namespace AISIN_WFA
                                 beltSpeedChanged = bar_rec_speed;
                                 beltSpeedChangeRemark = 2;
                                 LogWrite(string.Format("Lane{0}, current belt speed setpoint is {1}, belt speed setpoint in the mapping table is {2}. They doesn't match !", lane, currentBeltSpeed[1].ToString(), bar_rec.beltSpeed.ToString()));
+                                HLog.log(HLog.eLog.EVENT, $"Not Match Belt Speed[{(globalParameter.eLane)lane}] [Current Speed: {currentBeltSpeed[lane]}] [Barcode Speed: {bar_rec_speed}]");
                             }
                             if (bar_rec_width != -1 && bar_rec_width != currentBeltWidth[lane])
                             {
                                 railWidthChanged = bar_rec_width;
                                 railWidthChangeRemark = 2;
                                 LogWrite(string.Format("Lane{0}, current rail width setpoint is {1}, belt width setpoint in the mapping table is {2}. They doesn't match !", lane, currentBeltWidth[1].ToString(), bar_rec.beltWidth.ToString()));
+                                HLog.log(HLog.eLog.EVENT, $"Not Match Rail Width[{(globalParameter.eLane)lane}] [Current Width: {currentBeltWidth[lane]}] [Barcode Width: {bar_rec_width}]");
                             }
 
                             // All lanes needn't change anything
@@ -1770,24 +1832,28 @@ namespace AISIN_WFA
                             {
                                 LogWrite("Barcode is allowed to release smema");
                                 SmemaLaneHold(lane, 0);
+                                HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] Barcode is allowed [Release]");
                             }
                             // need change belt speed and rail width for lane1 or lane2
                             else if (railWidthChangeRemark != 0 && beltSpeedChangeRemark != 0)
                             {
                                 LogWrite("Begin to change belt speed and rail width on lane: " + lane);
                                 ChangeBeltSpeedAndWidth(lane, railWidthChanged, beltSpeedChanged);
+                                HLog.log(HLog.eLog.EVENT, $"Begin to change belt speed and rail width on {(globalParameter.eLane)lane}");
                             }
                             // need change rail width for lane1 or lane2
                             else if (railWidthChangeRemark != 0)
                             {
                                 LogWrite("Begin to change rail width on lane: " + lane);
                                 ChangeRailWidth(lane, railWidthChanged);
+                                HLog.log(HLog.eLog.EVENT, $"Begin to change rail width on {(globalParameter.eLane)lane}");
                             }
                             // need change belt speed for lane1 or lane2
                             else if (beltSpeedChangeRemark != 0)
                             {
                                 LogWrite("Begin to change belt speed on lane: " + lane);
                                 ChangeBeltSpeed(lane, beltSpeedChanged);
+                                HLog.log(HLog.eLog.EVENT, $"Begin to change belt speed on {(globalParameter.eLane)lane}");
                             }
 
                             break;
@@ -1799,6 +1865,7 @@ namespace AISIN_WFA
                     {
 #if true
                         bool match = RegexLib.IsValidCurrency(barcodeFromUp, bar_rec.barcode);
+                        HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [Not Match with Current Recipe:{currentRecipe}] [Barcode Recipe: {barcodeRecipe}] [Mappling Table: {bar_rec.barcode}] [Match: {match}]");
 #else
                         bool match = Regex.IsMatch(barcodeFromUp, WildCardToRegular(bar_rec.barcode));
 #endif
@@ -1813,11 +1880,13 @@ namespace AISIN_WFA
                             {
                                 beltSpeedChanged = bar_rec_speed;
                                 LogWrite("Also need to change belt speed to be " + beltSpeedChanged + " after recipe change");
+                                HLog.log(HLog.eLog.EVENT, $"[Also need to change belt speed to be {beltSpeedChanged} after recipe change");
                             }
                             if (bar_rec_width != -1)
                             {
                                 railWidthChanged = bar_rec_width;
                                 LogWrite("Also need to change rail width to be " + railWidthChanged + " after recipe change");
+                                HLog.log(HLog.eLog.EVENT, $"[Also need to change rail width to be {beltSpeedChanged} after recipe change");
                             }
                             //nextRecipeToLoad = 
                             ChangeRecipe(lane, nextRecipeToLoad, railWidthChanged, beltSpeedChanged);
@@ -1936,6 +2005,7 @@ namespace AISIN_WFA
                 {
                     boardCount += GetBoardsCountInOven(i);
                 }
+                HLog.log(HLog.eLog.EVENT, $"WaitForOvenEmptyToChangeRecipe()[Board In Count: {boardCount}]");
                 if (boardCount == 0 && nextRecipeToLoad != null)
                 {
                     LoadRecipe(recipeName);
@@ -1965,12 +2035,20 @@ namespace AISIN_WFA
 
         private void ChangeRecipe(int lane, string recipe, float targetWidth, float targetSpeed)
         {
+            HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] ChangeRecipe() [Recipe: {recipe}] [Width: {targetWidth}] [Speed: {targetSpeed}]");
             int currentBoardsCount = 0;
+
             // for (int i = 0; i < currentBoardsCount; i++) v1.19 MSL
+            // Not allow change recipe when one lane is empty...
+            // TCO is Single lane
+            // Dual lane need to both lane empty.
             for (int i = 0; i < 2; i++) // Max Lane 4
             {
                 currentBoardsCount += GetBoardsCountInOven(i);
             }
+
+            HLog.log(HLog.eLog.EVENT, $"ChangeRecipe() [Board In Count: {currentBoardsCount}]");
+
             if (currentBoardsCount == 0)
             {
                 // just load recipe
@@ -1983,19 +2061,32 @@ namespace AISIN_WFA
                     if (targetSpeed != -1)
                     {
                         SetBeltSpeed(lane, targetSpeed);
+                        HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [SetBeltSpeed] [Speed: {targetSpeed}]");
                     }
                     if (targetWidth != -1)
                     {
                         SetRailWidth(lane, targetWidth);
+                        HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [SetRailWidth] [Width: {targetWidth}]");
                     }
                 }
-                SmemaLaneHold(0, 0);
-                SmemaLaneHold(1, 0);
+
+                if (lane == 0)
+                {
+                    SmemaLaneHold(0, 0);
+                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [ChangeRecipe] [SMEMA: Release]");
+                }
+
+                if (lane == 1)
+                {
+                    SmemaLaneHold(1, 0);
+                    HLog.log(HLog.eLog.EVENT, $"[{(globalParameter.eLane)lane}] [ChangeRecipe] [SMEMA: Release]");
+                }
             }
             else
             {
+                HLog.log(HLog.eLog.EVENT, $":Starting wait oven emtpy for Load recipe");
                 // start a monitor thread to change recipe
-#if true    // v1.19
+#if true        // v1.19
                 if (!bWaitForOvenEmptytoLoadRecipe)
                 {
                     Task.Factory.StartNew(() =>
@@ -2057,6 +2148,7 @@ namespace AISIN_WFA
             recipeName = "c:\\oven\\recipe files\\" + recipeName + ".job";
             int iResult = ocx.LoadRecipe(recipeName);
             LogWrite("Loading recipe: " + recipeName + " Result=" + iResult.ToString());
+            HLog.log(HLog.eLog.EVENT, $"[Loading recipe: {recipeName}] [Result: {iResult}]");
             nextRecipeToLoad = null;
 #else
             ocxMutex.WaitOne();
@@ -2300,6 +2392,7 @@ namespace AISIN_WFA
         private void btnQuit_Click(object sender, EventArgs e)
         {
 #if true    // 25-Sep-22 MSL v1.19
+            HLog.log(HLog.eLog.EVENT, $"Click Quit Button");
             terminate();
 #else
             DialogResult result = MessageBox.Show("Are you sure?", "Quit", MessageBoxButtons.OKCancel);
@@ -2414,20 +2507,29 @@ namespace AISIN_WFA
             if (result == DialogResult.OK)
             {
 
-
+                HLog.log(HLog.eLog.EVENT, $"Starting terminate process");
 #if true
                 RunFlag = false;
 
                 Task.Factory.StartNew(() => { forceTerminate(); });
 
                 if (updateThread != null)
+                {
                     updateThread.Join();
+                    HLog.log(HLog.eLog.EVENT, $"terminate [updateThread - Join]");
+                }
 
                 if (upstreamThread != null)
+                {
                     upstreamThread.Join();
+                    HLog.log(HLog.eLog.EVENT, $"terminate [upstreamThread - Join]");
+                }
 
-                if (upstreamThread != null)
-                    upstreamThread.Join();
+                if (downstreamThread != null)
+                {
+                    downstreamThread.Join();
+                    HLog.log(HLog.eLog.EVENT, $"terminate [downstreamThread - Join]");
+                }
 
 #else
                 updateThread.Abort();
@@ -2449,10 +2551,18 @@ namespace AISIN_WFA
                         {
                             //dotUtlType1.Close();
                             if (UpstreamMxPlc != null)
+                            {
                                 UpstreamMxPlc.Close();
+                                UpstreamMxPlc = null;
+                                HLog.log(HLog.eLog.EVENT, $"terminate() [UpstreamMxPlc - Close]");
+                            }
 
                             if (DownstreamMxPlc != null)
+                            {
                                 DownstreamMxPlc.Close();
+                                DownstreamMxPlc = null;
+                                HLog.log(HLog.eLog.EVENT, $"terminate() [DownstreamMxPlc - Close]");
+                            }
                         }
                         break;
                     default:
@@ -2469,7 +2579,10 @@ namespace AISIN_WFA
                 for (int i = 0; i < 2; i++)
                 {
                     SmemaLaneHold(i, 0);
+                    HLog.log(HLog.eLog.EVENT, $"terminate [SmemaLaneHold] [{(globalParameter.eLane)i}] [Release]");
                 }
+
+                HLog.log(HLog.eLog.EVENT, $"Finish terminate process");
                 Environment.Exit(0);
             }
         }
@@ -2477,22 +2590,40 @@ namespace AISIN_WFA
         int threadJoinCount = 0;
         private void forceTerminate()
         {
+            HLog.log(HLog.eLog.EVENT, $"Starting forceTerminate process - Wait 1500ms");
             while (15 > threadJoinCount)
             {
                 threadJoinCount++;
                 Thread.Sleep(100);
             }
 
+            HLog.log(HLog.eLog.EVENT, $"Starting forceTerminate process - Done 1500ms");
             try
             {
+                // release smema before quit software
+                for (int i = 0; i < 2; i++)
+                {
+                    SmemaLaneHold(i, 0);
+                    HLog.log(HLog.eLog.EVENT, $"forceTerminate [SmemaLaneHold] [{(globalParameter.eLane)i}] [Release]");
+                }
+
                 if (updateThread != null)
+                {
                     updateThread.Abort();
+                    HLog.log(HLog.eLog.EVENT, $"forceTerminate [updateThread - Abort]");
+                }
 
                 if (upstreamThread != null)
+                {
                     upstreamThread.Abort();
+                    HLog.log(HLog.eLog.EVENT, $"forceTerminate [upstreamThread - Abort]");
+                }
 
-                if (upstreamThread != null)
-                    upstreamThread.Abort();
+                if (downstreamThread != null)
+                {
+                    downstreamThread.Abort();
+                    HLog.log(HLog.eLog.EVENT, $"forceTerminate [downstreamThread - Abort]");
+                }
 
                 closeOK = true;
 
@@ -2506,21 +2637,25 @@ namespace AISIN_WFA
                         {
                             //dotUtlType1.Close();
                             if (UpstreamMxPlc != null)
+                            {
                                 UpstreamMxPlc.Close();
+                                UpstreamMxPlc = null;
+                                HLog.log(HLog.eLog.EVENT, $"forceTerminate [UpstreamMxPlc - Close]");
+                            }
 
                             if (DownstreamMxPlc != null)
+                            {
                                 DownstreamMxPlc.Close();
+                                DownstreamMxPlc = null;
+                                HLog.log(HLog.eLog.EVENT, $"forceTerminate [DownstreamMxPlc - Close]");
+                            }
                         }
                         break;
                     default:
                         break;
                 }
 
-                // release smema before quit software
-                for (int i = 0; i < 2; i++)
-                {
-                    SmemaLaneHold(i, 0);
-                }
+                
                 Environment.Exit(0);
             }
             catch (Exception ex)

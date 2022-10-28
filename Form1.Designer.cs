@@ -78,25 +78,25 @@ namespace AISIN_WFA
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
+            this.tlp_downstream = new System.Windows.Forms.TableLayoutPanel();
             this.tb_DnPlcConnState = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
+            this.tb_dnRetryCount = new System.Windows.Forms.TextBox();
+            this.tlp_Upstream = new System.Windows.Forms.TableLayoutPanel();
             this.tb_UpPlcConnState = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.tb_upRetryCount = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.tb_Hc2state = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.tb_upRetryCount = new System.Windows.Forms.TextBox();
-            this.tb_dnRetryCount = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
-            this.tableLayoutPanel7.SuspendLayout();
-            this.tableLayoutPanel6.SuspendLayout();
+            this.tlp_downstream.SuspendLayout();
+            this.tlp_Upstream.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -629,8 +629,8 @@ namespace AISIN_WFA
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 27.27273F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.36364F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.36364F));
-            this.tableLayoutPanel4.Controls.Add(this.tableLayoutPanel7, 2, 0);
-            this.tableLayoutPanel4.Controls.Add(this.tableLayoutPanel6, 1, 0);
+            this.tableLayoutPanel4.Controls.Add(this.tlp_downstream, 2, 0);
+            this.tableLayoutPanel4.Controls.Add(this.tlp_Upstream, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.tableLayoutPanel5, 0, 0);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 370);
@@ -641,23 +641,23 @@ namespace AISIN_WFA
             this.tableLayoutPanel4.Size = new System.Drawing.Size(515, 30);
             this.tableLayoutPanel4.TabIndex = 121;
             // 
-            // tableLayoutPanel7
+            // tlp_downstream
             // 
-            this.tableLayoutPanel7.ColumnCount = 3;
-            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
-            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
-            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14.28571F));
-            this.tableLayoutPanel7.Controls.Add(this.tb_DnPlcConnState, 1, 0);
-            this.tableLayoutPanel7.Controls.Add(this.label4, 0, 0);
-            this.tableLayoutPanel7.Controls.Add(this.tb_dnRetryCount, 2, 0);
-            this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel7.Location = new System.Drawing.Point(327, 0);
-            this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel7.Name = "tableLayoutPanel7";
-            this.tableLayoutPanel7.RowCount = 1;
-            this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel7.Size = new System.Drawing.Size(188, 30);
-            this.tableLayoutPanel7.TabIndex = 2;
+            this.tlp_downstream.ColumnCount = 3;
+            this.tlp_downstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
+            this.tlp_downstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
+            this.tlp_downstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14.28571F));
+            this.tlp_downstream.Controls.Add(this.tb_DnPlcConnState, 1, 0);
+            this.tlp_downstream.Controls.Add(this.label4, 0, 0);
+            this.tlp_downstream.Controls.Add(this.tb_dnRetryCount, 2, 0);
+            this.tlp_downstream.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlp_downstream.Location = new System.Drawing.Point(327, 0);
+            this.tlp_downstream.Margin = new System.Windows.Forms.Padding(0);
+            this.tlp_downstream.Name = "tlp_downstream";
+            this.tlp_downstream.RowCount = 1;
+            this.tlp_downstream.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlp_downstream.Size = new System.Drawing.Size(188, 30);
+            this.tlp_downstream.TabIndex = 2;
             // 
             // tb_DnPlcConnState
             // 
@@ -680,23 +680,33 @@ namespace AISIN_WFA
             this.label4.Text = "Downstream : ";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tableLayoutPanel6
+            // tb_dnRetryCount
             // 
-            this.tableLayoutPanel6.ColumnCount = 3;
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14.28571F));
-            this.tableLayoutPanel6.Controls.Add(this.tb_UpPlcConnState, 1, 0);
-            this.tableLayoutPanel6.Controls.Add(this.label3, 0, 0);
-            this.tableLayoutPanel6.Controls.Add(this.tb_upRetryCount, 2, 0);
-            this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel6.Location = new System.Drawing.Point(140, 0);
-            this.tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel6.Name = "tableLayoutPanel6";
-            this.tableLayoutPanel6.RowCount = 1;
-            this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(187, 30);
-            this.tableLayoutPanel6.TabIndex = 1;
+            this.tb_dnRetryCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_dnRetryCount.Location = new System.Drawing.Point(163, 5);
+            this.tb_dnRetryCount.Name = "tb_dnRetryCount";
+            this.tb_dnRetryCount.ReadOnly = true;
+            this.tb_dnRetryCount.Size = new System.Drawing.Size(22, 20);
+            this.tb_dnRetryCount.TabIndex = 2;
+            this.tb_dnRetryCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // tlp_Upstream
+            // 
+            this.tlp_Upstream.ColumnCount = 3;
+            this.tlp_Upstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
+            this.tlp_Upstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 42.85714F));
+            this.tlp_Upstream.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14.28571F));
+            this.tlp_Upstream.Controls.Add(this.tb_UpPlcConnState, 1, 0);
+            this.tlp_Upstream.Controls.Add(this.label3, 0, 0);
+            this.tlp_Upstream.Controls.Add(this.tb_upRetryCount, 2, 0);
+            this.tlp_Upstream.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlp_Upstream.Location = new System.Drawing.Point(140, 0);
+            this.tlp_Upstream.Margin = new System.Windows.Forms.Padding(0);
+            this.tlp_Upstream.Name = "tlp_Upstream";
+            this.tlp_Upstream.RowCount = 1;
+            this.tlp_Upstream.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tlp_Upstream.Size = new System.Drawing.Size(187, 30);
+            this.tlp_Upstream.TabIndex = 1;
             // 
             // tb_UpPlcConnState
             // 
@@ -718,6 +728,16 @@ namespace AISIN_WFA
             this.label3.TabIndex = 1;
             this.label3.Text = "Upstream : ";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // tb_upRetryCount
+            // 
+            this.tb_upRetryCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_upRetryCount.Location = new System.Drawing.Point(163, 5);
+            this.tb_upRetryCount.Name = "tb_upRetryCount";
+            this.tb_upRetryCount.ReadOnly = true;
+            this.tb_upRetryCount.Size = new System.Drawing.Size(21, 20);
+            this.tb_upRetryCount.TabIndex = 2;
+            this.tb_upRetryCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // tableLayoutPanel5
             // 
@@ -756,26 +776,6 @@ namespace AISIN_WFA
             this.label2.Text = "HC2 State : ";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // tb_upRetryCount
-            // 
-            this.tb_upRetryCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_upRetryCount.Location = new System.Drawing.Point(163, 5);
-            this.tb_upRetryCount.Name = "tb_upRetryCount";
-            this.tb_upRetryCount.ReadOnly = true;
-            this.tb_upRetryCount.Size = new System.Drawing.Size(21, 20);
-            this.tb_upRetryCount.TabIndex = 2;
-            this.tb_upRetryCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // tb_dnRetryCount
-            // 
-            this.tb_dnRetryCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_dnRetryCount.Location = new System.Drawing.Point(163, 5);
-            this.tb_dnRetryCount.Name = "tb_dnRetryCount";
-            this.tb_dnRetryCount.ReadOnly = true;
-            this.tb_dnRetryCount.Size = new System.Drawing.Size(22, 20);
-            this.tb_dnRetryCount.TabIndex = 2;
-            this.tb_dnRetryCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -795,10 +795,10 @@ namespace AISIN_WFA
             this.groupBox2.ResumeLayout(false);
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
-            this.tableLayoutPanel7.ResumeLayout(false);
-            this.tableLayoutPanel7.PerformLayout();
-            this.tableLayoutPanel6.ResumeLayout(false);
-            this.tableLayoutPanel6.PerformLayout();
+            this.tlp_downstream.ResumeLayout(false);
+            this.tlp_downstream.PerformLayout();
+            this.tlp_Upstream.ResumeLayout(false);
+            this.tlp_Upstream.PerformLayout();
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel5.PerformLayout();
             this.ResumeLayout(false);
@@ -853,10 +853,10 @@ namespace AISIN_WFA
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private System.Windows.Forms.TextBox tb_Hc2state;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;
+        private System.Windows.Forms.TableLayoutPanel tlp_downstream;
         private System.Windows.Forms.TextBox tb_DnPlcConnState;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel6;
+        private System.Windows.Forms.TableLayoutPanel tlp_Upstream;
         private System.Windows.Forms.TextBox tb_UpPlcConnState;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox tb_upRetryCount;

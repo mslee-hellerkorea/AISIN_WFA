@@ -1,4 +1,5 @@
 ﻿using AISIN_WFA.Models;
+using AISIN_WFA.Utility;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -105,6 +106,7 @@ namespace AISIN_WFA.GUI
 
         private void Delete_Click(object sender, EventArgs e)
         {
+            HLog.log(HLog.eLog.EVENT, $"User Mapping click Delete Button");
             int rowCount = recipe_table.Rows.Count;
             if (rowCount > 1 && recipe_table.CurrentRow != null)
                 recipe_table.Rows.RemoveAt(recipe_table.CurrentRow.Index);
@@ -130,6 +132,11 @@ namespace AISIN_WFA.GUI
                     menuStrip = null;
                 }
             }
+        }
+
+        private void dataGridView1_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            e.Control.ContextMenu = new ContextMenu();
         }
 
         private void initializeTable()
@@ -159,6 +166,7 @@ namespace AISIN_WFA.GUI
 
         private void button1_Click(object sender, EventArgs e)
         {
+            HLog.log(HLog.eLog.EVENT, $"User Click Mapping Table Save Button");
             saveParameter();
             Close();
         }

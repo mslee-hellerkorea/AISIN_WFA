@@ -18,6 +18,7 @@ namespace AISIN_WFA.GUI
         public BarcodeSetting()
         {
             InitializeComponent();
+            HLog.log(HLog.eLog.EVENT, $"Open Barocde Setting Load config by setted values");
             chk_autoChange.Checked = globalParameter.autoChangeRecipeWidthSpeed;
             chk_holdSmema.Checked = globalParameter.holdSmemaUntilBarcode;
         }
@@ -31,6 +32,7 @@ namespace AISIN_WFA.GUI
             //Dictionary<string, string> ModifiedDict = new Dictionary<string, string>();
             //ModifiedDict.Add("HoldSmemaBarcode", chk_holdSmema.Checked.ToString());
             //globalFunctions.changeXMLFile(ModifiedDict);
+            HLog.log(HLog.eLog.EVENT, $"Change globalParameter.holdSmemaUntilBarcode to { globalParameter.holdSmemaUntilBarcode}");
         }
 
         public static BarcodeSetting AddFormInstance()
@@ -51,6 +53,7 @@ namespace AISIN_WFA.GUI
             //Dictionary<string, string> ModifiedDict = new Dictionary<string, string>();
             //ModifiedDict.Add("AutoBarcodeRecipe", chk_autoChange.Checked.ToString());
             //globalFunctions.changeXMLFile(ModifiedDict);
+            HLog.log(HLog.eLog.EVENT, $"Change globalParameter.autoChangeRecipeWidthSpeed to { globalParameter.autoChangeRecipeWidthSpeed}");
         }
     }
 }

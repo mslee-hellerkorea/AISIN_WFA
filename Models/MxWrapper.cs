@@ -45,11 +45,16 @@ namespace AISIN_WFA.Models
         {
             try
             {
+                string szCpuName = string.Empty;
+                int lplCpuCode = 0;
                 StationNumber = station;
                 actUtlType = new ActUtlTypeLib.ActUtlType();
                 actUtlType.ActLogicalStationNumber = station;
                 actUtlType.Open();
                 actUtlType.OnDeviceStatus += new ActUtlTypeLib._IActUtlTypeEvents_OnDeviceStatusEventHandler(OnDeviceStatusEvent);
+                
+                actUtlType.GetCpuType(out szCpuName, out lplCpuCode);
+                HLog.log(HLog.eLog.EVENT,$"[Station: {StationNumber}][CPU Name: {szCpuName}][CPU Code: {lplCpuCode}]");
 
                 timer.Interval = 1000;
                 timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elasped);
@@ -158,6 +163,7 @@ namespace AISIN_WFA.Models
                 try
                 {
                     iRst = actUtlType.Close();
+                    HLog.log(HLog.eLog.EVENT, $"MX Component Station {actUtlType.ActLogicalStationNumber} - Close");
                 }
                 catch (Exception ex)
                 {
@@ -352,7 +358,10 @@ namespace AISIN_WFA.Models
                     HLog.log("ERROR", String.Format("ReadDeviceBlock -- Message: {0}", ex.Message));
                 }
             }
-            SetError(iRst);
+
+            if (iRst != 0) 
+                SetError(iRst);
+
             return iRst;
         }
 
@@ -631,9 +640,10 @@ namespace AISIN_WFA.Models
                     HLog.log("ERROR", String.Format("WriteDeviceBlock -- Message: {0}", ex.Message));
                 }
             }
-            if (iRst == 0) return 0;
 
-            SetError(iRst);
+            if (iRst != 0)
+                SetError(iRst);
+
             return iRst;
         }
 
@@ -718,7 +728,7 @@ namespace AISIN_WFA.Models
 
         private void SetError(int _iErrorCode)
         {
-            sErrorCode = String.Format("0x{0:x8} [HEX]", iErrorCode);
+            sErrorCode = String.Format("0x{0:x8} [HEX]", IntToHex(_iErrorCode));
             iErrorCode = _iErrorCode;
             HLog.log("INFO", String.Format("MxComponent Error --- {0}", sErrorCode));
         }

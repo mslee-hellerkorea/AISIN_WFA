@@ -96,10 +96,12 @@ namespace AISIN_WFA.GUI
             try
             {
                 Button btn = (Button)sender;
+                
                 switch (btn.Tag)
                 {
                     case "Save":
                         SaveConfig();
+                        HLog.log(HLog.eLog.EVENT, $"User Click {btn.Tag} Button");
                         break;
                     case "Modify":
                         if (!IsModify)
@@ -107,16 +109,19 @@ namespace AISIN_WFA.GUI
                             IsModify = true;
                             tableLayoutPanel1.Enabled = true;
                             btn_Modify.Text = "Lock";
+                            HLog.log(HLog.eLog.EVENT, $"User Click Modify Button");
                         }
                         else
                         {
                             IsModify = false;
                             tableLayoutPanel1.Enabled = false;
                             btn_Modify.Text = "Modify";
+                            HLog.log(HLog.eLog.EVENT, $"User Click Lock Button");
                         }
                         break;
                     case "Close":
                         this.Close();
+                        HLog.log(HLog.eLog.EVENT, $"User Click PLC Setup Close Button");
                         break;
                     default:
                         break;
