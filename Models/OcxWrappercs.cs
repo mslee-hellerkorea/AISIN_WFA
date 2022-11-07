@@ -1,4 +1,15 @@
-﻿using AISIN_WFA.Utility;
+﻿//-----------------------------------------------------------------------------
+// OcxWrappercs.cs -- OcxWrappercs
+//
+// Author: MS Lee
+// E-mail: mslee@hellerindustries.co.kr
+// Tel:
+//
+// Edit History:
+//
+// 07-Nov-22  01.01.01.00   MSL Improvement ocx thread.
+//-----------------------------------------------------------------------------
+using AISIN_WFA.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -85,7 +96,19 @@ namespace AISIN_WFA.Models
                 ocx = new AxHELLERCOMMLib.AxHellerComm();
                 ocx.CreateControl();
                 isSuccess = ocx.StartCommunicating(1);
-                if (isSuccess) isSuccess = ocx.StartOven();
+                if (isSuccess)
+                {
+                    isSuccess = ocx.StartOven();
+                    //[07 - Nov - 22  01.01.01.00   MSL Improvement ocx thread. - Start]
+                    ocx.NotificationEvent += OCXWrapper_NotificationEvent;
+                    ocx.UpdateChannelParam += OCXWrapper_UpdateChannelParam;
+
+                    // Start Get from ocx
+                    Task.Factory.StartNew(() => { ThreadPolling(); });
+                    //[07 - Nov - 22  01.01.01.00   MSL Improvement ocx thread. - End]
+                }
+                else
+                    return false;
             }
             catch (Exception ex)
             {
@@ -93,16 +116,6 @@ namespace AISIN_WFA.Models
             }
 
             if (!isSuccess) return false;
-
-            ocx.NotificationEvent += OCXWrapper_NotificationEvent;
-            ocx.UpdateChannelParam += OCXWrapper_UpdateChannelParam;
-
-
-            Task.Factory.StartNew(() =>
-            {
-                ThreadPolling();
-            });
-            // Start Get from ocx
 
             return true;
         }
@@ -880,7 +893,7 @@ namespace AISIN_WFA.Models
 
         private void OCXWrapper_UpdateChannelParam(object sender, AxHELLERCOMMLib._DHellerCommEvents_UpdateChannelParamEvent e)
         {
-            HLog.log(HLog.eLog.EXCEPTION, $"EnumChannel : {e.enumChannel}, ChannelParam : {e.enumChannellParam}, Value : {e.fValue}");
+            HLog.log(HLog.eLog.EVENT, $"EnumChannel : {e.enumChannel}, ChannelParam : {e.enumChannellParam}, Value : {e.fValue}");
             //throw new NotImplementedException();
         }
         #endregion

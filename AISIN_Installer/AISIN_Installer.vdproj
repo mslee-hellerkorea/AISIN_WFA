@@ -1026,15 +1026,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AISIN Line Comm"
-        "ProductCode" = "8:{6F52C9D9-9282-4CA6-89A4-8C006078590B}"
-        "PackageCode" = "8:{B04AD611-9FFB-4B5C-AACB-98E0657F91D5}"
+        "ProductCode" = "8:{4B010FF1-4C49-47E2-B357-24F7453FA7C5}"
+        "PackageCode" = "8:{0EA6E729-B8EA-47F4-B19C-31CE6E15F44D}"
         "UpgradeCode" = "8:{848E164B-624C-4E2F-A19E-3B431531173D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.1.0"
+        "ProductVersion" = "8:1.1.1"
         "Manufacturer" = "8:Heller Industries"
         "ARPHELPTELEPHONE" = "8:+1(973)377-6800"
         "ARPHELPLINK" = "8:http://www.hellerindustries.com"
@@ -1548,7 +1548,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1410283804EA4BF9B5FBFA252C75C350"
             {
-            "SourcePath" = "8:..\\obj\\x86\\Debug\\AISIN_WFA.exe"
+            "SourcePath" = "8:..\\obj\\x86\\Release\\AISIN_WFA.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_9C6BF9B40F2243A0BC5B7B9DDB6184C5"

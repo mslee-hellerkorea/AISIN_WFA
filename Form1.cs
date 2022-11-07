@@ -32,8 +32,9 @@
 // 29-Dec-20  01.17  DCH  Add debug information for downstream information print.
 // 06-Jun-22  01.18  DCH  Add the capibility to support "Mitsubshi" PLC.
 // 23-Sep-22  01-19  MSL  Debug the capibility to support "Mitsubishi" PLC.
-// 12-Oct-22  01-20  MSL  1) Add Trace Log.
-//                        2) Remove MX Component Label feature.
+// 12-Oct-22  01.01.00.00   MSL  1) Add Trace Log.
+//                               2) Remove MX Component Label feature.
+// 07-Nov-22  01.01.01.00   MSL Improvement Mitsubishi PLC thread.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.0.0";
+        private string revision = "v1.1.1.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -279,17 +280,21 @@ namespace AISIN_WFA
                         break;
                     case globalParameter.ePLCType.Mitsubishi:
                         {
-                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[PLC Type: Mitsubishi]");
-                            int UpStation = globalParameter.UpstreamMxPlcStation;
-                            int DownStation = globalParameter.DownstreamMxPlcStation;
+                            //[07-Nov-22  01.01.01.00   MSL Improvement Mitsubishi PLC thread.]
+                            Task.Factory.StartNew(() =>
+                            {
+                                HLog.log(HLog.eLog.EVENT, $"InitializePLC()[PLC Type: Mitsubishi]");
+                                int UpStation = globalParameter.UpstreamMxPlcStation;
+                                int DownStation = globalParameter.DownstreamMxPlcStation;
 
-                            UpstreamMxPlc = new MxWrapper(UpStation);
-                            DownstreamMxPlc = new MxWrapper(DownStation);
+                                UpstreamMxPlc = new MxWrapper(UpStation);
+                                DownstreamMxPlc = new MxWrapper(DownStation);
 
-                            UpstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
-                            DownstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
-                            HLog.log(HLog.eLog.EVENT, $"InitializePLC()[Created: Mitsubishi-Mx Components]");
-                            UpDownstreamThread();
+                                UpstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
+                                DownstreamMxPlc.UpdateMxConnectionStateEventHandler += MxPlc_UpdateMxConnectionStateEventHandler;
+                                HLog.log(HLog.eLog.EVENT, $"InitializePLC()[Created: Mitsubishi-Mx Components]");
+                                UpDownstreamThread();
+                            });
                         }
                         break;
                     default:
@@ -3478,7 +3483,5 @@ namespace AISIN_WFA
 
 
         #endregion
-
-
     }
 }
