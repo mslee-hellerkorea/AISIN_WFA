@@ -82,13 +82,13 @@ namespace AISIN_WFA.GUI
             this.tbLogFilesFolder = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel10 = new System.Windows.Forms.TableLayoutPanel();
             this.ckb_RailLog = new System.Windows.Forms.CheckBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.tb_EventLogPath = new System.Windows.Forms.TextBox();
             this.btnSave = new System.Windows.Forms.Button();
             this.btn_Modify = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel9 = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Close = new System.Windows.Forms.Button();
-            this.label18 = new System.Windows.Forms.Label();
-            this.tb_EventLogPath = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -268,6 +268,7 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel4.Size = new System.Drawing.Size(316, 186);
             this.tableLayoutPanel4.TabIndex = 0;
             // 
@@ -711,7 +712,7 @@ namespace AISIN_WFA.GUI
             this.label17.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label17.Location = new System.Drawing.Point(3, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(103, 30);
+            this.label17.Size = new System.Drawing.Size(102, 30);
             this.label17.TabIndex = 0;
             this.label17.Text = "Trace Files Folder :";
             this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -719,9 +720,9 @@ namespace AISIN_WFA.GUI
             // tbLogFilesFolder
             // 
             this.tbLogFilesFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbLogFilesFolder.Location = new System.Drawing.Point(112, 5);
+            this.tbLogFilesFolder.Location = new System.Drawing.Point(111, 5);
             this.tbLogFilesFolder.Name = "tbLogFilesFolder";
-            this.tbLogFilesFolder.Size = new System.Drawing.Size(298, 20);
+            this.tbLogFilesFolder.Size = new System.Drawing.Size(299, 20);
             this.tbLogFilesFolder.TabIndex = 1;
             // 
             // tableLayoutPanel10
@@ -751,6 +752,25 @@ namespace AISIN_WFA.GUI
             this.ckb_RailLog.TabIndex = 0;
             this.ckb_RailLog.Text = "Rail Width Log";
             this.ckb_RailLog.UseVisualStyleBackColor = true;
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label18.Location = new System.Drawing.Point(3, 30);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(102, 30);
+            this.label18.TabIndex = 3;
+            this.label18.Text = "Event Log Folder :";
+            this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_EventLogPath
+            // 
+            this.tb_EventLogPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_EventLogPath.Location = new System.Drawing.Point(111, 35);
+            this.tb_EventLogPath.Name = "tb_EventLogPath";
+            this.tb_EventLogPath.Size = new System.Drawing.Size(299, 20);
+            this.tb_EventLogPath.TabIndex = 1;
             // 
             // btnSave
             // 
@@ -824,25 +844,6 @@ namespace AISIN_WFA.GUI
             this.btn_Close.Text = "Setup Close";
             this.btn_Close.UseVisualStyleBackColor = true;
             this.btn_Close.Click += new System.EventHandler(this.button_Click);
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label18.Location = new System.Drawing.Point(3, 30);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(103, 30);
-            this.label18.TabIndex = 3;
-            this.label18.Text = "Event Log Folder :";
-            this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // tb_EventLogPath
-            // 
-            this.tb_EventLogPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_EventLogPath.Location = new System.Drawing.Point(112, 35);
-            this.tb_EventLogPath.Name = "tb_EventLogPath";
-            this.tb_EventLogPath.Size = new System.Drawing.Size(298, 20);
-            this.tb_EventLogPath.TabIndex = 1;
             // 
             // PlcSetupWindow
             // 

@@ -69,6 +69,8 @@ namespace AISIN_WFA.Models
 
         public static string[] strRails = new string[] { "Rail1", "Rail2", "Rail3", "Rail4", "-" };
 
+        public static string AddrMitsubishiPlcAliveCheck = "SM8000";
+
         public enum eLane
         {
             Lane1,

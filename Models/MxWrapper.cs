@@ -1,4 +1,15 @@
-﻿using AISIN_WFA.Utility;
+﻿//-----------------------------------------------------------------------------
+// MxWrapper.cs -- MxWrapper
+//
+// Author: MS Lee
+// E-mail: mslee@hellerindustries.co.kr
+// Tel:
+//
+// Edit History:
+//
+// 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
+//-----------------------------------------------------------------------------
+using AISIN_WFA.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -194,8 +205,9 @@ namespace AISIN_WFA.Models
             {
                 try
                 {
+                    // 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
                     // FX M8000 is always on / M8001 is always off
-                    iRst = actUtlType.GetDevice("M8000", out iData);
+                    iRst = actUtlType.GetDevice("SM8000", out iData); 
                 }
                 catch (Exception ex)
                 {

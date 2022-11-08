@@ -58,7 +58,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.1.0";
+        private string revision = "v1.1.2.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
