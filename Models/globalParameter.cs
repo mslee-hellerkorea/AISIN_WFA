@@ -69,7 +69,7 @@ namespace AISIN_WFA.Models
 
         public static string[] strRails = new string[] { "Rail1", "Rail2", "Rail3", "Rail4", "-" };
 
-        public static string AddrMitsubishiPlcAliveCheck = "SM8000";
+        public static string AddrMitsubishiPlcAliveCheck = "SM8000"; //08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
 
         public enum eLane
         {

@@ -1,4 +1,15 @@
-﻿using AISIN_WFA.Models;
+﻿//-----------------------------------------------------------------------------
+// PlcSetupWindow.cs -- PlcSetupWindow
+//
+// Author: MS Lee
+// E-mail: mslee@hellerindustries.co.kr
+// Tel:
+//
+// Edit History:
+//
+// 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
+//-----------------------------------------------------------------------------
+using AISIN_WFA.Models;
 using AISIN_WFA.Utility;
 using System;
 using System.Collections.Generic;
@@ -72,6 +83,8 @@ namespace AISIN_WFA.GUI
 
                 tb_Lane1RailWidthAddr.Text = globalParameter.AddrMxRailWidthLane1.ToString();
                 tb_Lane2RailWidthAddr.Text = globalParameter.AddrMxRailWidthLane2.ToString();
+
+                tb_PlcAliveCheckAddr.Text = globalParameter.AddrMitsubishiPlcAliveCheck.ToString();
 
                 tbUpstreamPLCTag.Text = globalParameter.UpstreamPLCTag;
                 tbDownstreamPLCTag.Text = globalParameter.DownstreamPLCTag;
@@ -180,12 +193,14 @@ namespace AISIN_WFA.GUI
                     globalParameter.AddrMxBoardAvailableLane2 = tb_Lane2BaAddr.Text;
                     globalParameter.AddrMxRailWidthLane1 = tb_Lane1RailWidthAddr.Text;
                     globalParameter.AddrMxRailWidthLane2 = tb_Lane2RailWidthAddr.Text;
+                    globalParameter.AddrMitsubishiPlcAliveCheck = tb_PlcAliveCheckAddr.Text; // 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
                     UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane1", globalParameter.AddrMxBarcodeLane1);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxBarcodeLane2", globalParameter.AddrMxBarcodeLane2);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane1", globalParameter.AddrMxBoardAvailableLane1);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
                     UseConfigFile.SetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
+                    UseConfigFile.SetStringConfigurationSetting("AddrMitsubishiPlcAliveCheck", globalParameter.AddrMitsubishiPlcAliveCheck); // 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
 
                     // Omron Address
                     globalParameter.UpstreamPLCTag = tbUpstreamPLCTag.Text;

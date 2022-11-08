@@ -205,9 +205,10 @@ namespace AISIN_WFA.Models
             {
                 try
                 {
-                    // 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
                     // FX M8000 is always on / M8001 is always off
-                    iRst = actUtlType.GetDevice("SM8000", out iData); 
+                    // 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
+                    // 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
+                    iRst = actUtlType.GetDevice(globalParameter.AddrMitsubishiPlcAliveCheck, out iData); 
                 }
                 catch (Exception ex)
                 {

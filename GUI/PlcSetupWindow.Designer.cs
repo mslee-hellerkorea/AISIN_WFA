@@ -89,6 +89,8 @@ namespace AISIN_WFA.GUI
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel9 = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Close = new System.Windows.Forms.Button();
+            this.label19 = new System.Windows.Forms.Label();
+            this.tb_PlcAliveCheckAddr = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -258,17 +260,19 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel4.Controls.Add(this.label8, 0, 4);
             this.tableLayoutPanel4.Controls.Add(this.tb_Lane2BcrAddr, 1, 3);
             this.tableLayoutPanel4.Controls.Add(this.tb_Lane2BaAddr, 1, 4);
+            this.tableLayoutPanel4.Controls.Add(this.label19, 0, 5);
+            this.tableLayoutPanel4.Controls.Add(this.tb_PlcAliveCheckAddr, 1, 5);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 6;
+            this.tableLayoutPanel4.RowCount = 7;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel4.Size = new System.Drawing.Size(316, 186);
             this.tableLayoutPanel4.TabIndex = 0;
             // 
@@ -845,6 +849,25 @@ namespace AISIN_WFA.GUI
             this.btn_Close.UseVisualStyleBackColor = true;
             this.btn_Close.Click += new System.EventHandler(this.button_Click);
             // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label19.Location = new System.Drawing.Point(3, 150);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(183, 30);
+            this.label19.TabIndex = 3;
+            this.label19.Text = "PLC alive check address";
+            this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_PlcAliveCheckAddr
+            // 
+            this.tb_PlcAliveCheckAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_PlcAliveCheckAddr.Location = new System.Drawing.Point(192, 155);
+            this.tb_PlcAliveCheckAddr.Name = "tb_PlcAliveCheckAddr";
+            this.tb_PlcAliveCheckAddr.Size = new System.Drawing.Size(121, 20);
+            this.tb_PlcAliveCheckAddr.TabIndex = 4;
+            // 
             // PlcSetupWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -950,5 +973,7 @@ namespace AISIN_WFA.GUI
         private System.Windows.Forms.Button btn_Close;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox tb_EventLogPath;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox tb_PlcAliveCheckAddr;
     }
 }

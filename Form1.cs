@@ -58,7 +58,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.2.0";
+        private string revision = "v1.1.2.1";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -406,6 +406,8 @@ namespace AISIN_WFA
                 globalParameter.AddrMxBoardAvailableLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxBoardAvailableLane2", globalParameter.AddrMxBoardAvailableLane2);
                 globalParameter.AddrMxRailWidthLane1 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane1", globalParameter.AddrMxRailWidthLane1);
                 globalParameter.AddrMxRailWidthLane2 = UseConfigFile.GetStringConfigurationSetting("AddrMxRailWidthLane2", globalParameter.AddrMxRailWidthLane2);
+
+                globalParameter.AddrMitsubishiPlcAliveCheck = UseConfigFile.GetStringConfigurationSetting("AddrMitsubishiPlcAliveCheck", globalParameter.AddrMitsubishiPlcAliveCheck);
 
                 string lane1enable = globalParameter.UpstreamEnableLane1.ToString();
                 string lane2enable = globalParameter.UpstreamEnableLane2.ToString();
