@@ -8,6 +8,7 @@
 // Edit History:
 //
 // 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
+// 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception.(Release 01.01.03.00)
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -219,13 +220,15 @@ namespace AISIN_WFA.Models
             if (iRst == 0 && iData == 1)
             {
                 bConnected = true;
-                UpdateMxConnectionStateEventHandler.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+                // 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception
+                UpdateMxConnectionStateEventHandler?.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
                 return true;
             }
             else
             {
                 bConnected = false;
-                UpdateMxConnectionStateEventHandler.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+                // 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception
+                UpdateMxConnectionStateEventHandler?.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
             }
 
             return false;

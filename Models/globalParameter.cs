@@ -1,4 +1,15 @@
-﻿using System;
+﻿//-----------------------------------------------------------------------------
+// globalParameter.cs -- globalParameter
+//
+// Author: MS Lee
+// E-mail: mslee@hellerindustries.co.kr
+// Tel:
+//
+// Edit History:
+//
+//08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check(Release 01.01.03.00)
+//-----------------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,6 +56,8 @@ namespace AISIN_WFA.Models
         public static string Lane1Rail { get; set; } = "Rail1";
         public static string Lane2Rail { get; set; } = "Rail2";
 
+        public static string LaneType { get; set; } = "SingleLane";
+
         public enum ePLCType
         {
             None,
@@ -68,6 +81,7 @@ namespace AISIN_WFA.Models
         }
 
         public static string[] strRails = new string[] { "Rail1", "Rail2", "Rail3", "Rail4", "-" };
+        public static string[] strLaneType = new string[] { "SingleLane", "DualLane" };
 
         public static string AddrMitsubishiPlcAliveCheck = "SM8000"; //08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
 

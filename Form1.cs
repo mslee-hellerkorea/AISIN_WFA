@@ -35,6 +35,7 @@
 // 12-Oct-22  01.01.00.00   MSL  1) Add Trace Log.
 //                               2) Remove MX Component Label feature.
 // 07-Nov-22  01.01.01.00   MSL Improvement Mitsubishi PLC thread.
+// 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.(Release 01.01.03.00)
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -58,7 +59,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.2.1";
+        private string revision = "v1.1.3.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -422,6 +423,10 @@ namespace AISIN_WFA
                 // Lane2EHC
                 globalParameter.Lane2Rail = UseConfigFile.GetStringConfigurationSetting("Lane2Rail", globalParameter.Lane2Rail);
                 HLog.log(HLog.eLog.EVENT, $"LoadConfigurationSettings()[Completed read Configuraiton]");
+
+                // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.
+                globalParameter.LaneType = UseConfigFile.GetStringConfigurationSetting("LaneType", globalParameter.LaneType);
+
             }
             catch (Exception ex)
             {
@@ -2204,6 +2209,21 @@ namespace AISIN_WFA
             // > And should be set Lane2 for rear lane.
             // [Front Lane#1] D0 / D21
             // [Rear Lane#1] D100 / D121
+
+            // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.
+            switch (globalParameter.LaneType)
+            {
+                case "SingleLane":
+                    {
+                        HLog.log(HLog.eLog.EVENT, $"LaneType is Single lane Change to SMEMA Control Lane from [{lane}] to [0]");
+                        lane = 0;
+                    }
+                    break;
+                case "DualLane":
+                    break;
+                default:
+                    break;
+            }
 
             ocx.SetSmema(lane, hold);
         }

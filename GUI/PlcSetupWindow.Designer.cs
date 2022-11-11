@@ -49,6 +49,8 @@ namespace AISIN_WFA.GUI
             this.label8 = new System.Windows.Forms.Label();
             this.tb_Lane2BcrAddr = new System.Windows.Forms.TextBox();
             this.tb_Lane2BaAddr = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.tb_PlcAliveCheckAddr = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.label5 = new System.Windows.Forms.Label();
@@ -89,8 +91,8 @@ namespace AISIN_WFA.GUI
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel9 = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Close = new System.Windows.Forms.Button();
-            this.label19 = new System.Windows.Forms.Label();
-            this.tb_PlcAliveCheckAddr = new System.Windows.Forms.TextBox();
+            this.label20 = new System.Windows.Forms.Label();
+            this.cb_LaneType = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -371,6 +373,25 @@ namespace AISIN_WFA.GUI
             this.tb_Lane2BaAddr.Size = new System.Drawing.Size(121, 20);
             this.tb_Lane2BaAddr.TabIndex = 1;
             // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label19.Location = new System.Drawing.Point(3, 150);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(183, 30);
+            this.label19.TabIndex = 3;
+            this.label19.Text = "PLC alive check address";
+            this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_PlcAliveCheckAddr
+            // 
+            this.tb_PlcAliveCheckAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_PlcAliveCheckAddr.Location = new System.Drawing.Point(192, 155);
+            this.tb_PlcAliveCheckAddr.Name = "tb_PlcAliveCheckAddr";
+            this.tb_PlcAliveCheckAddr.Size = new System.Drawing.Size(121, 20);
+            this.tb_PlcAliveCheckAddr.TabIndex = 4;
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.tableLayoutPanel5);
@@ -627,10 +648,13 @@ namespace AISIN_WFA.GUI
             this.tableLayoutPanel7.Controls.Add(this.label13, 0, 1);
             this.tableLayoutPanel7.Controls.Add(this.cb_Lane1Rail, 1, 0);
             this.tableLayoutPanel7.Controls.Add(this.cb_Lane2Rail, 1, 1);
+            this.tableLayoutPanel7.Controls.Add(this.label20, 0, 2);
+            this.tableLayoutPanel7.Controls.Add(this.cb_LaneType, 1, 2);
             this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel7.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel7.Name = "tableLayoutPanel7";
-            this.tableLayoutPanel7.RowCount = 3;
+            this.tableLayoutPanel7.RowCount = 4;
+            this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -849,24 +873,25 @@ namespace AISIN_WFA.GUI
             this.btn_Close.UseVisualStyleBackColor = true;
             this.btn_Close.Click += new System.EventHandler(this.button_Click);
             // 
-            // label19
+            // label20
             // 
-            this.label19.AutoSize = true;
-            this.label19.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label19.Location = new System.Drawing.Point(3, 150);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(183, 30);
-            this.label19.TabIndex = 3;
-            this.label19.Text = "PLC alive check address";
-            this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label20.AutoSize = true;
+            this.label20.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label20.Location = new System.Drawing.Point(3, 60);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(114, 30);
+            this.label20.TabIndex = 2;
+            this.label20.Text = "Lane Type:";
+            this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // tb_PlcAliveCheckAddr
+            // cb_LaneType
             // 
-            this.tb_PlcAliveCheckAddr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tb_PlcAliveCheckAddr.Location = new System.Drawing.Point(192, 155);
-            this.tb_PlcAliveCheckAddr.Name = "tb_PlcAliveCheckAddr";
-            this.tb_PlcAliveCheckAddr.Size = new System.Drawing.Size(121, 20);
-            this.tb_PlcAliveCheckAddr.TabIndex = 4;
+            this.cb_LaneType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.cb_LaneType.FormattingEnabled = true;
+            this.cb_LaneType.Location = new System.Drawing.Point(123, 64);
+            this.cb_LaneType.Name = "cb_LaneType";
+            this.cb_LaneType.Size = new System.Drawing.Size(114, 21);
+            this.cb_LaneType.TabIndex = 3;
             // 
             // PlcSetupWindow
             // 
@@ -975,5 +1000,7 @@ namespace AISIN_WFA.GUI
         private System.Windows.Forms.TextBox tb_EventLogPath;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox tb_PlcAliveCheckAddr;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.ComboBox cb_LaneType;
     }
 }

@@ -7,7 +7,8 @@
 //
 // Edit History:
 //
-// 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check
+// 08-Nov-22  01.01.02.01   MSL Added setup config for address of PLC Alive check.(Releaes 01.01.03.00)
+// 11-Nov-211 01.01.02.02   MSL Added Lane Type configuration for TCO oven. (Releaes 01.01.03.00)
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Models;
 using AISIN_WFA.Utility;
@@ -41,6 +42,8 @@ namespace AISIN_WFA.GUI
                 cb_Lane2Enable.DropDownStyle = ComboBoxStyle.DropDownList;
                 cb_Lane1Rail.DropDownStyle = ComboBoxStyle.DropDownList;
                 cb_Lane2Rail.DropDownStyle = ComboBoxStyle.DropDownList;
+                // 11-Nov-211 01.01.02.02   MSL Added Lane Type configuration for TCO oven.
+                cb_LaneType.DropDownStyle = ComboBoxStyle.DropDownList;
 
                 tabctrl_PlcType.Appearance = TabAppearance.FlatButtons;
                 tabctrl_PlcType.ItemSize = new Size(0, 1);
@@ -96,6 +99,13 @@ namespace AISIN_WFA.GUI
                 tbLogFilesFolder.Text = globalParameter.LogFilePath;
                 tb_EventLogPath.Text = globalParameter.debugLogFolder;
                 ckb_RailLog.Checked = globalParameter.RailLogging ? true : false;
+
+                // 11-Nov-211 01.01.02.02   MSL Added Lane Type configuration for TCO oven.
+                for (int lane = 0; lane < globalParameter.strLaneType.Length; lane++)
+                {
+                    cb_LaneType.Items.Add(globalParameter.strLaneType[lane].ToString());
+                }
+                cb_LaneType.Text = globalParameter.LaneType;
 
             }
             catch (Exception ex)
@@ -230,6 +240,10 @@ namespace AISIN_WFA.GUI
                     UseConfigFile.SetStringConfigurationSetting("debugLogFolder", tb_EventLogPath.Text);
                     globalParameter.RailLogging = ckb_RailLog.Checked ? true : false;
                     UseConfigFile.SetBoolConfigurationSetting("RailLogging", globalParameter.RailLogging);
+
+                    // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.
+                    UseConfigFile.SetStringConfigurationSetting("LaneType", cb_LaneType.Text);
+
                     MessageBox.Show("Saved config file. Please restart this application to apply changes.");
                 }
             }
