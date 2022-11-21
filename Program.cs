@@ -7,14 +7,17 @@
 //
 // Edit History:
 //
-// 04-Aug-14  00.01  FJN  Created
-// 05-Sep-14  00.02  FJN  Disable form close requiring Quit to exit
+// 04-Aug-14  00.01         FJN  Created
+// 05-Sep-14  00.02         FJN  Disable form close requiring Quit to exit
+// 21-Nov-22  01.01.04.00   MSL  Added feature of duplicate execution prevention.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Diagnostics;
+using AISIN_WFA.Utility;
 
 namespace AISIN_WFA
 {
@@ -26,6 +29,14 @@ namespace AISIN_WFA
         [STAThread]
         static void Main()
         {
+            // 21-Nov-22  01.01.04.00   MSL  Added feature of duplicate execution prevention.
+            if (IsExistProcess(Process.GetCurrentProcess().ProcessName))
+            {
+                MessageBox.Show("Line Communication Software Already running");
+                HLog.log(HLog.eLog.EVENT, "Line Communication Software Already running");
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             try
@@ -38,6 +49,21 @@ namespace AISIN_WFA
             {
                 MessageBox.Show("Main Exception " + e.Message);
             }
+        }
+        
+        private static bool IsExistProcess(string processName)
+        {
+            // 21-Nov-22  01.01.04.00   MSL  Added feature of duplicate execution prevention.
+            Process[] process = Process.GetProcesses();
+            int cnt = 0;
+            foreach (var p in process)
+            {
+                if (p.ProcessName == processName)
+                    cnt++;
+                if (cnt > 1)
+                    return true;
+            }
+            return false;
         }
     }
 }
