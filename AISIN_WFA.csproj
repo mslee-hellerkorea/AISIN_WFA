@@ -230,9 +230,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ReleaseNote.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <COMReference Include="ActUtlTypeLib">
       <Guid>{D217E54E-4A26-4A76-B0AB-57166B90F9AF}</Guid>
       <VersionMajor>1</VersionMajor>
