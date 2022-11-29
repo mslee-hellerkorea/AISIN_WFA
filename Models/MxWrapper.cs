@@ -9,6 +9,7 @@
 //
 // 08-Nov-22  01.01.02.00   MSL Check PLC connected to FX5U Model(SM8000 FX3U M8000).
 // 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception.(Release 01.01.03.00)
+// 28-Nov-22  01.01.05.00   MSL Debug Mitsubishi connection state.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -109,13 +110,16 @@ namespace AISIN_WFA.Models
                 if (MAX_RETRY_COUNT > RetryConnectCount)
                 {
                     RetryConnectCount++;
-                    HLog.log("INFO", String.Format("Start retry open PLC..."));
+                    // 28-Nov-22  01.01.05.00   MSL Debug Mitsubishi connection state.
+                    HLog.log("INFO", String.Format($"Start retry open [Station: {StationNumber}] PLC..."));
                     Open(StationNumber);
-                    HLog.log("INFO", String.Format("End retry open PLC..."));
+                    // 28-Nov-22  01.01.05.00   MSL Debug Mitsubishi connection state.
+                    HLog.log("INFO", String.Format($"End retry open [Station: {StationNumber}] PLC..."));
                     IsRetryFail = false;
                 }
                 else
                 {
+                    // 28-Nov-22  01.01.05.00   MSL Debug Mitsubishi connection state.
                     IsRetryFail = true;
                     HLog.log(HLog.eLog.ERROR, $"PLC Station: {StationNumber}, Retry Connect fail...");
                     Close();
@@ -124,8 +128,11 @@ namespace AISIN_WFA.Models
             }
             else
             {
+                // 28-Nov-22  01.01.05.00   MSL Debug Mitsubishi connection state.
+                IsRetryFail = false;
+                //IsRetryFail = true;
                 RetryConnectCount = 0;
-                IsRetryFail = true;
+                NotifyConnectionState(true);
             }
 
             timer.Enabled = true;
@@ -219,19 +226,29 @@ namespace AISIN_WFA.Models
 
             if (iRst == 0 && iData == 1)
             {
-                bConnected = true;
-                // 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception
-                UpdateMxConnectionStateEventHandler?.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+
+                NotifyConnectionState(true);
                 return true;
             }
             else
             {
-                bConnected = false;
-                // 11-Nov-22  01.01.02.03   MSL Debug UpdateMxConnectionStateEventHandler null exception
-                UpdateMxConnectionStateEventHandler?.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+                NotifyConnectionState(false);
             }
 
             return false;
+        }
+
+        public void NotifyConnectionState(bool isConnected)
+        {
+            try
+            {
+                bConnected = isConnected;
+                UpdateMxConnectionStateEventHandler?.BeginInvoke(actUtlType.ActLogicalStationNumber, null, null);
+            }
+            catch (Exception ex)
+            {
+                HLog.log("ERROR", String.Format("NotifyConnectionState -- Message: {0}", ex.Message));
+            }
         }
 
         public bool EntryDeviceStatus(string szDeviceList, int lSize, int lMonitorCycle, ref int lplData)
