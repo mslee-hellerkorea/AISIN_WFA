@@ -8,6 +8,7 @@
 // Edit History:
 //
 // 07-Nov-22  01.01.01.00   MSL Improvement ocx thread.
+// 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -340,9 +341,9 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
-                ocx.TakeControl(2);
+                //ocx.TakeControl(2);    // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
                 ocx.SetRailWidth((short)railIdx, width);
-                ocx.ReleaseControl(2);
+                //ocx.ReleaseControl(2); // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
             }
             catch (Exception ex)
             {
@@ -383,9 +384,9 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
-                ocx.TakeControl(2);
+                //ocx.TakeControl(2);       // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
                 ocx.SetFurnaceBeltSpeed(speed, (short)beltIdx);
-                ocx.ReleaseControl(2);
+                //ocx.ReleaseControl(2);    // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
             }
             catch (Exception ex)
             {
@@ -547,7 +548,7 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
-                ocx.TakeControl(2);
+                //ocx.TakeControl(2); // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
                 if (isCoolZone)
                 {
                     //channelparam is used to set the SP according the recipe information's sequence.
@@ -561,7 +562,7 @@ namespace AISIN_WFA.Models
                     else heaterIndex = zoneID * 2;
                     ocx.SetFurnaceSetpoints_Float(temperature, (short)heaterIndex);
                 }
-                ocx.ReleaseControl(2);
+                //ocx.ReleaseControl(2); // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
             }
             catch (Exception ex)
             {

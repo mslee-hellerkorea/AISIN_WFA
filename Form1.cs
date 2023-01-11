@@ -36,6 +36,7 @@
 //                               2) Remove MX Component Label feature.
 // 07-Nov-22  01.01.01.00   MSL Improvement Mitsubishi PLC thread.
 // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.(Release 01.01.03.00)
+// 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.5.0";
+        private string revision = "v1.1.7.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -2356,7 +2357,10 @@ namespace AISIN_WFA
         public void SetRailWidth(int lane, float targetWidth)
         {
 #if true
-            SetRailWidth((short)(lane + beltCount - 1), targetWidth);
+            short railNum = GetRailConfigNumber(lane);
+            //ocx.SetRailWidth((short)(lane + beltCount - 1), targetWidth); // 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
+            ocx.SetRailWidth(railNum, targetWidth);       // 11-Jan-23  01.01.06.00   MSL add Get Rail confignumber for rail control.
+            HLog.log(HLog.eLog.EVENT, $"Set Rail Width on lane [{lane}], Rail[{railNum}], target width [{targetWidth}]" );
             LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString());
 #else
             ocxMutex.WaitOne();
@@ -2365,6 +2369,44 @@ namespace AISIN_WFA
             ocxMutex.ReleaseMutex();
             LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString() + ", Result=" + iResult.ToString());
 #endif
+        }
+
+        private short GetRailConfigNumber(int lane)
+        {
+            short rail = 1;
+            string laneRail = "-";
+            try
+            {
+                if (lane == 0)
+                    laneRail = globalParameter.Lane1Rail;
+                else
+                    laneRail = globalParameter.Lane2Rail;
+
+                switch (laneRail)
+                {
+                    case "Rail1":
+                        rail = 1;
+                        break;
+                    case "Rail2":
+                        rail = 2;
+                        break;
+                    case "Rail3":
+                        rail = 3;
+                        break;
+                    case "Rail4":
+                        rail = 4;
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                HLog.log(HLog.eLog.EXCEPTION, $"forceTerminate - {ex.Message}");
+            }
+
+            return rail;
         }
 
         private void refreshSpeedWidth()
