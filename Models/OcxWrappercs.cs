@@ -9,6 +9,7 @@
 //
 // 07-Nov-22  01.01.01.00   MSL Improvement ocx thread.
 // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
+// 11-Jan-23  01.01.08.00   MSL restore remove take control
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -384,9 +385,10 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
-                //ocx.TakeControl(2);       // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
+                // 11-Jan-23  01.01.08.00   MSL restore remove take control
+                ocx.TakeControl(2);       // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
                 ocx.SetFurnaceBeltSpeed(speed, (short)beltIdx);
-                //ocx.ReleaseControl(2);    // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
+                ocx.ReleaseControl(2);    // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
             }
             catch (Exception ex)
             {

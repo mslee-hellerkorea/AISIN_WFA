@@ -37,6 +37,7 @@
 // 07-Nov-22  01.01.01.00   MSL Improvement Mitsubishi PLC thread.
 // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.(Release 01.01.03.00)
 // 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
+// 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -60,7 +61,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.7.0";
+        private string revision = "v1.1.8.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -2342,7 +2343,9 @@ namespace AISIN_WFA
         public void SetBeltSpeed(int lane, float targetSpeed)
         {
 #if true
-            ocx.SetBeltSpeed((short)(lane + beltCount - 1), targetSpeed);
+            //ocx.SetBeltSpeed((short)(lane + beltCount - 1), targetSpeed); // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
+            ocx.SetBeltSpeed((short)(lane + 1), targetSpeed);               // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
+            HLog.log(HLog.eLog.EVENT, $"Set Belt Speed on lane [{lane}], target speed [{targetSpeed}]");
             LogWrite("Set Belt Speed on lane: " + lane + ", target Speed: " + targetSpeed.ToString("F1"));
 #else
             ocxMutex.WaitOne();
