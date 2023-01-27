@@ -1,4 +1,16 @@
-﻿using AISIN_WFA.Models;
+﻿//-----------------------------------------------------------------------------
+// BarcodeMappingTable.cs -- Barcode Mapping Table
+//
+// Author: MS Lee
+// E-mail: mslee@hellerindustries.co.kr
+// Tel:
+//
+// Edit History:
+//
+// 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+//                              Discard decimal point during gets belt setpoint.
+//-----------------------------------------------------------------------------
+using AISIN_WFA.Models;
 using AISIN_WFA.Utility;
 using Newtonsoft.Json;
 using System;
@@ -76,11 +88,22 @@ namespace AISIN_WFA.GUI
             }
             else
             {
+                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                //                              Discard decimal point during gets belt setpoint.
+#if true
+                if (!Regex.IsMatch(width_value.ToString(), @"^(0|([1-9]\d*))(\d+)?$"))
+                {
+                    MessageBox.Show("Belt Width must be digital !\n configuration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+#else
                 if (!Regex.IsMatch(width_value.ToString(), @"^(0|([1-9]\d*))(\.\d+)?$"))
                 {
                     MessageBox.Show("Belt Width must be digital or decimal values !\nPage3 configuration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
+#endif
+
                 //float.TryParse(width_value.ToString(), out beltWidth);
                 beltWidth = (string)width_value;
             }
@@ -90,11 +113,21 @@ namespace AISIN_WFA.GUI
             }
             else
             {
+                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                //                              Discard decimal point during gets belt setpoint.
+#if true
+                if (!Regex.IsMatch(speed_value.ToString(), @"^(0|([1-9]\d*))(\d+)?$"))
+                {
+                    MessageBox.Show("Belt Speed must be digital !\nConfiguration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+#else
                 if (!Regex.IsMatch(speed_value.ToString(), @"^(0|([1-9]\d*))(\.\d+)?$"))
                 {
                     MessageBox.Show("Belt Speed must be digital or decimal values !\nConfiguration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
+#endif
                 //beltSpeed = float.Parse(speed_value.ToString());
                 //float.TryParse(speed_value.ToString(), out beltSpeed);
                 //beltSpeed = (float)speed_value;

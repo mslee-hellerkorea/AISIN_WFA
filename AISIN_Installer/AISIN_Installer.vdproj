@@ -620,7 +620,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5F29532A464748600A0875AEDA4B2916"
             {
-            "SourcePath" = "8:Heller Comm.ocx"
+            "SourcePath" = "8:Heller COMM.ocx"
             "TargetName" = "8:Heller COMM.ocx"
             "Tag" = "8:"
             "Folder" = "8:_9C6BF9B40F2243A0BC5B7B9DDB6184C5"
@@ -1026,15 +1026,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AISIN Line Comm"
-        "ProductCode" = "8:{05A41CE4-7BD0-42BE-8707-C97CD9DF99C2}"
-        "PackageCode" = "8:{841E5081-68B7-4FF0-BD2F-AFDDF96FC596}"
+        "ProductCode" = "8:{2FB1D87B-4D7B-43BF-B810-E3BACDF90E0F}"
+        "PackageCode" = "8:{E6F3DF6A-2F68-4066-82C4-3A324328BED5}"
         "UpgradeCode" = "8:{848E164B-624C-4E2F-A19E-3B431531173D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.1.8"
+        "ProductVersion" = "8:1.1.9"
         "Manufacturer" = "8:Heller Industries"
         "ARPHELPTELEPHONE" = "8:+1(973)377-6800"
         "ARPHELPLINK" = "8:http://www.hellerindustries.com"
@@ -1548,7 +1548,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1410283804EA4BF9B5FBFA252C75C350"
             {
-            "SourcePath" = "8:..\\obj\\x86\\Release\\AISIN_WFA.exe"
+            "SourcePath" = "8:..\\obj\\x86\\Debug\\AISIN_WFA.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_9C6BF9B40F2243A0BC5B7B9DDB6184C5"

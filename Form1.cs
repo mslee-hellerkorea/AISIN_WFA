@@ -38,6 +38,8 @@
 // 11-Nov-22  01.01.01.02   MSL MSL Added Lane Type configuration for TCO oven.(Release 01.01.03.00)
 // 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
 // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
+// 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+//                              Discard decimal point during gets belt setpoint.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -61,7 +63,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.8.0";
+        private string revision = "v1.1.9.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -2343,6 +2345,9 @@ namespace AISIN_WFA
         public void SetBeltSpeed(int lane, float targetSpeed)
         {
 #if true
+            // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+            //                              Discard decimal point during gets belt setpoint.
+            targetSpeed = (float)Math.Truncate(targetSpeed);
             //ocx.SetBeltSpeed((short)(lane + beltCount - 1), targetSpeed); // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
             ocx.SetBeltSpeed((short)(lane + 1), targetSpeed);               // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
             HLog.log(HLog.eLog.EVENT, $"Set Belt Speed on lane [{lane}], target speed [{targetSpeed}]");
@@ -2362,6 +2367,10 @@ namespace AISIN_WFA
 #if true
             short railNum = GetRailConfigNumber(lane);
             //ocx.SetRailWidth((short)(lane + beltCount - 1), targetWidth); // 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
+
+            // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+            //                              Discard decimal point during gets belt setpoint.
+            targetWidth = (float)Math.Truncate(targetWidth);
             ocx.SetRailWidth(railNum, targetWidth);       // 11-Jan-23  01.01.06.00   MSL add Get Rail confignumber for rail control.
             HLog.log(HLog.eLog.EVENT, $"Set Rail Width on lane [{lane}], Rail[{railNum}], target width [{targetWidth}]" );
             LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString());
@@ -2429,8 +2438,15 @@ namespace AISIN_WFA
                 // get belt speed and width setpoint
                 for (int i = 0; i < 2; i++)
                 {
+#if true
+                    // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                    //                              Discard decimal point during gets belt setpoint.
+                    currentBeltWidth.Add((float)Math.Truncate(GetRailSetPoint(i)));
+                    currentBeltSpeed.Add((float)Math.Truncate(GetBeltSpeedSetPoint(i)));
+#else
                     currentBeltWidth.Add(GetRailSetPoint(i));
                     currentBeltSpeed.Add(GetBeltSpeedSetPoint(i));
+#endif
                 }
             }
             catch (Exception ex)
@@ -2439,9 +2455,9 @@ namespace AISIN_WFA
             }
         }
 
-        #endregion
+#endregion
 
-        #region [Button Function]
+#region [Button Function]
 
 
         //---------------------------------------------------------------------
@@ -2940,9 +2956,9 @@ namespace AISIN_WFA
             setup.ShowDialog();
         }
 
-        #endregion
+#endregion
 
-        #region [Log]
+#region [Log]
 
         public void LogWrite(string msg)
         {
@@ -2969,9 +2985,9 @@ namespace AISIN_WFA
             }
             logMutex.ReleaseMutex();
         }
-        #endregion
+#endregion
 
-        #region [No more used]
+#region [No more used]
         AxHELLERCOMMLib.AxHellerComm obj;
         // private AxActProgTypeLib.AxActProgType axActProgType1;
         // private DotUtlType dotUtlType1;
@@ -3549,6 +3565,6 @@ namespace AISIN_WFA
 
 
 
-        #endregion
+#endregion
     }
 }

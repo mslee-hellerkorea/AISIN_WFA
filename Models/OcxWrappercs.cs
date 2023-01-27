@@ -10,6 +10,8 @@
 // 07-Nov-22  01.01.01.00   MSL Improvement ocx thread.
 // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
 // 11-Jan-23  01.01.08.00   MSL restore remove take control
+// 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+//                              Discard decimal point during gets belt setpoint.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -358,15 +360,22 @@ namespace AISIN_WFA.Models
 
         public float GetRailWidth(int railIdx)
         {
-            float RailWidth = 0;
+            float fRailWidth = 0;
             lockOcx.EnterWriteLock();
             try
             {
                 variant = ocx.GetRailWidth((short)railIdx);
                 if (variant == null)
-                    RailWidth = -1;
+                    fRailWidth = -1;
                 else
-                    RailWidth = (float)variant;
+                    fRailWidth = (float)variant;
+#if false
+                // Display same value with Oven Software.
+                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                //                              Discard decimal point during gets belt setpoint.
+                if (railIdx > 100) // discard decimal point only setpoint
+                    fRailWidth = (float)Math.Truncate(fRailWidth);
+#endif
             }
             catch (Exception ex)
             {
@@ -377,7 +386,7 @@ namespace AISIN_WFA.Models
                 lockOcx.ExitWriteLock();
             }
 
-            return RailWidth;
+            return fRailWidth;
         }
 
         public void SetBeltSpeed(int beltIdx, float speed)
@@ -385,6 +394,10 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
+                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                //                              Discard decimal point during gets belt setpoint.
+                speed = (float)Math.Truncate(speed);
+
                 // 11-Jan-23  01.01.08.00   MSL restore remove take control
                 ocx.TakeControl(2);       // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
                 ocx.SetFurnaceBeltSpeed(speed, (short)beltIdx);
@@ -407,7 +420,17 @@ namespace AISIN_WFA.Models
             try
             {
                 if (isSetPoint)
-                    speed = ocx.GetFurnaceBeltSetPoint((short)channel) * 0.1F; // TODO : 확인 필요
+                {
+#if false
+                    // Display same value with Oven Software.
+                    // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
+                    //                              Discard decimal point during gets belt setpoint.
+                    speed = ocx.GetFurnaceBeltSetPoint((short)channel) * 0.1F;
+                    speed = (float)Math.Truncate(speed);
+#else
+                    speed = ocx.GetFurnaceBeltSetPoint((short)channel) * 0.1F;
+#endif
+                }
                 else
                     speed = Convert.ToSingle(ocx.GetFurnaceBeltSpeed((short)channel)) / 100F;
             }
@@ -694,9 +717,9 @@ namespace AISIN_WFA.Models
 
             return value;
         }
-        #endregion
+#endregion
 
-        #region [Local Function]
+#region [Local Function]
         private string[] ConvertToTraceData()
         {
             string[] valuse = new string[20];
@@ -773,9 +796,9 @@ namespace AISIN_WFA.Models
             }
             return valuse;
         }
-        #endregion
+#endregion
 
-        #region [Event]
+#region [Event]
         private void OCXWrapper_NotificationEvent(object sender, AxHELLERCOMMLib._DHellerCommEvents_NotificationEventEvent e)
         {
             switch ((eOCXEventID)e.lEventID)
@@ -899,6 +922,6 @@ namespace AISIN_WFA.Models
             HLog.log(HLog.eLog.EVENT, $"EnumChannel : {e.enumChannel}, ChannelParam : {e.enumChannellParam}, Value : {e.fValue}");
             //throw new NotImplementedException();
         }
-        #endregion
+#endregion
     }
 }
