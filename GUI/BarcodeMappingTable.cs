@@ -9,6 +9,7 @@
 //
 // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
 //                              Discard decimal point during gets belt setpoint.
+// 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Models;
 using AISIN_WFA.Utility;
@@ -88,10 +89,9 @@ namespace AISIN_WFA.GUI
             }
             else
             {
-                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-                //                              Discard decimal point during gets belt setpoint.
+                // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
 #if true
-                if (!Regex.IsMatch(width_value.ToString(), @"^(0|([1-9]\d*))(\d+)?$"))
+                if (!Regex.IsMatch(width_value.ToString(), @"^(0|([1-9]\d*))(\.\d)?$"))
                 {
                     MessageBox.Show("Belt Width must be digital !\n configuration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
@@ -113,10 +113,10 @@ namespace AISIN_WFA.GUI
             }
             else
             {
-                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-                //                              Discard decimal point during gets belt setpoint.
+                // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
+
 #if true
-                if (!Regex.IsMatch(speed_value.ToString(), @"^(0|([1-9]\d*))(\d+)?$"))
+                if (!Regex.IsMatch(speed_value.ToString(), @"^(0|([1-9]\d*))(\.\d)?$"))
                 {
                     MessageBox.Show("Belt Speed must be digital !\nConfiguration failed.", "Barcode recipe table", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;

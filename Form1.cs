@@ -40,6 +40,7 @@
 // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
 // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
 //                              Discard decimal point during gets belt setpoint.
+// 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
 //-----------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
@@ -63,7 +64,7 @@ namespace AISIN_WFA
     {
         #region [Members]
         // Revision
-        private string revision = "v1.1.9.0";
+        private string revision = "v1.1.10.0";
         private OcxWrappercs ocx;
         private MxWrapper UpstreamMxPlc;
         private MxWrapper DownstreamMxPlc;
@@ -2345,9 +2346,9 @@ namespace AISIN_WFA
         public void SetBeltSpeed(int lane, float targetSpeed)
         {
 #if true
-            // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-            //                              Discard decimal point during gets belt setpoint.
-            targetSpeed = (float)Math.Truncate(targetSpeed);
+            // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
+            targetSpeed = (float)Math.Round(targetSpeed, 1);
+
             //ocx.SetBeltSpeed((short)(lane + beltCount - 1), targetSpeed); // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
             ocx.SetBeltSpeed((short)(lane + 1), targetSpeed);               // 11-Jan-23  01.01.08.00   MSL Bug fix to belt speed index
             HLog.log(HLog.eLog.EVENT, $"Set Belt Speed on lane [{lane}], target speed [{targetSpeed}]");
@@ -2368,9 +2369,8 @@ namespace AISIN_WFA
             short railNum = GetRailConfigNumber(lane);
             //ocx.SetRailWidth((short)(lane + beltCount - 1), targetWidth); // 11-Jan-23  01.01.06.00   MSL Bug fix to software shutdown(crashes) when change rail width.
 
-            // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-            //                              Discard decimal point during gets belt setpoint.
-            targetWidth = (float)Math.Truncate(targetWidth);
+            // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
+            targetWidth = (float)Math.Round(targetWidth, 1);
             ocx.SetRailWidth(railNum, targetWidth);       // 11-Jan-23  01.01.06.00   MSL add Get Rail confignumber for rail control.
             HLog.log(HLog.eLog.EVENT, $"Set Rail Width on lane [{lane}], Rail[{railNum}], target width [{targetWidth}]" );
             LogWrite("Set Rail Width on lane: " + lane.ToString() + ", target width: " + targetWidth.ToString());

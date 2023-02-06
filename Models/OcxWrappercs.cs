@@ -12,6 +12,7 @@
 // 11-Jan-23  01.01.08.00   MSL restore remove take control
 // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
 //                              Discard decimal point during gets belt setpoint.
+// 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -369,12 +370,10 @@ namespace AISIN_WFA.Models
                     fRailWidth = -1;
                 else
                     fRailWidth = (float)variant;
-#if false
-                // Display same value with Oven Software.
-                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-                //                              Discard decimal point during gets belt setpoint.
+#if true
+                // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
                 if (railIdx > 100) // discard decimal point only setpoint
-                    fRailWidth = (float)Math.Truncate(fRailWidth);
+                    fRailWidth = (float)Math.Round(fRailWidth, 1); //fRailWidth = (float)Math.Truncate(fRailWidth);
 #endif
             }
             catch (Exception ex)
@@ -394,9 +393,8 @@ namespace AISIN_WFA.Models
             lockOcx.EnterWriteLock();
             try
             {
-                // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
-                //                              Discard decimal point during gets belt setpoint.
-                speed = (float)Math.Truncate(speed);
+                // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
+                speed = (float)Math.Round(speed, 1);
 
                 // 11-Jan-23  01.01.08.00   MSL restore remove take control
                 ocx.TakeControl(2);       // 11-Jan-23  01.01.07.00   MSL Remove take control when change SP.
