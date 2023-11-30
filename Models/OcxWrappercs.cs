@@ -13,6 +13,7 @@
 // 27-Jan-23  01.01.09.00   MSL Discard decimal point during gets rail setpoint.
 //                              Discard decimal point during gets belt setpoint.
 // 07-Feb-23  01.01.10.00   MSL Discard more than one decimal place during gets rail setpoint.
+// 30-Nov-23  01.01.11.00   MSL Missing barcode number in case of TCO Single lane oven.
 //-----------------------------------------------------------------------------
 using AISIN_WFA.Utility;
 using System;
@@ -869,8 +870,18 @@ namespace AISIN_WFA.Models
                         //not use
                         break;
                     case eOCXEventID.LANE1_BOARD_ENTRY:
+
+                        // ---------------------------------------------
+                        // In caes of TCO
+                        // PLC Upstream setup -> Lane#1 Disable, Lane#1 Enable
+                        // Board Entry Event Lane1 from oven.
+                        string tcoBarcode = Lane1Barcode;
+                        if (globalParameter.UpstreamEnableLane1 == globalParameter.eUpstreamUse.Disable &&
+                            globalParameter.UpstreamEnableLane2 == globalParameter.eUpstreamUse.Enable)
+                            tcoBarcode = Lane2Barcode;
+
                         SetSmema(0, 1);
-                        HLog.logTrace(Lane1Barcode, ConvertToTraceData());
+                        HLog.logTrace(tcoBarcode, ConvertToTraceData());
                         //UseLog.Log(UseLog.LogCategory.Error, $"TEST Board{e.lEventData} Enter");
                         BoardEntered(1, e.lEventData);  //lEventData is serial number of baord 
                         break;
